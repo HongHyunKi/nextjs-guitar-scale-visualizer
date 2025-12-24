@@ -6,7 +6,7 @@ import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
 import { Music } from 'lucide-react'
-import { ScaleType } from '@/lib/music-utils'
+import { ScaleType, getScaleNotes, noteToFixedSolfege } from '@/lib/music-utils'
 
 export default function Page() {
   const [notationType, setNotationType] = useState<'alphabetical' | 'syllabic'>(
@@ -14,6 +14,21 @@ export default function Page() {
   )
   const [rootNote, setRootNote] = useState('C')
   const [scaleType, setScaleType] = useState<ScaleType>('major')
+
+  const scaleNotes = getScaleNotes(rootNote, scaleType)
+
+  const getScaleLabel = (type: ScaleType) => {
+    switch (type) {
+      case 'major':
+        return 'Major'
+      case 'minor':
+        return 'Minor'
+      case 'major-pentatonic':
+        return 'Major Pentatonic'
+      case 'minor-pentatonic':
+        return 'Minor Pentatonic'
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
@@ -66,6 +81,26 @@ export default function Page() {
               scaleType={scaleType}
               onScaleTypeChange={setScaleType}
             />
+            <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+              <div className="text-xs text-muted-foreground mb-1">
+                {rootNote} {getScaleLabel(scaleType)} 구성음
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {scaleNotes.map((note, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col items-center gap-1 px-2 py-1 bg-background rounded"
+                  >
+                    <span className="text-sm font-medium">{note}</span>
+                    {notationType === 'syllabic' && (
+                      <span className="text-xs text-muted-foreground">
+                        {noteToFixedSolfege(note)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

@@ -18,23 +18,34 @@ const SOLFEGE_MAP: Record<number, string> = {
 const FIXED_SOLFEGE_MAP: Record<string, string> = {
   C: '도',
   'C#': '도#',
+  Db: '레♭',
   D: '레',
   'D#': '레#',
+  Eb: '미♭',
   E: '미',
   F: '파',
   'F#': '파#',
+  Gb: '솔♭',
   G: '솔',
   'G#': '솔#',
+  Ab: '라♭',
   A: '라',
   'A#': '라#',
+  Bb: '시♭',
   B: '시',
 }
 
 // Scale type definition
 export type ScaleType = 'major' | 'minor' | 'major-pentatonic' | 'minor-pentatonic'
 
-// All notes in chromatic order
-const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+// All notes in chromatic order (sharp notation)
+const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+// All notes in chromatic order (flat notation)
+const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+
+// Default notes array for backwards compatibility
+const NOTES = NOTES_SHARP
 
 // Major scale intervals (W-W-H-W-W-W-H) - 1, 2, 3, 4, 5, 6, 7
 const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11]
@@ -70,31 +81,43 @@ export function getScaleNotes(
   const rootIndex = getNoteIndex(rootNote)
 
   let intervals: number[]
+  let notesArray: string[]
+
   switch (scaleType) {
     case 'major':
       intervals = MAJOR_INTERVALS
+      notesArray = NOTES_SHARP
       break
     case 'minor':
       intervals = MINOR_INTERVALS
+      notesArray = NOTES_FLAT
       break
     case 'major-pentatonic':
       intervals = MAJOR_PENTATONIC_INTERVALS
+      notesArray = NOTES_SHARP
       break
     case 'minor-pentatonic':
       intervals = MINOR_PENTATONIC_INTERVALS
+      notesArray = NOTES_FLAT
       break
     default:
       intervals = MAJOR_INTERVALS
+      notesArray = NOTES_SHARP
   }
 
   return intervals.map(interval => {
     const noteIndex = (rootIndex + interval) % 12
-    return NOTES[noteIndex]
+    return notesArray[noteIndex]
   })
 }
 
-export function getNoteFromFret(openString: string, fret: number): string {
+export function getNoteFromFret(
+  openString: string,
+  fret: number,
+  useFlat: boolean = false
+): string {
   const startIndex = getNoteIndex(openString)
   const noteIndex = (startIndex + fret) % 12
-  return NOTES[noteIndex]
+  const notesArray = useFlat ? NOTES_FLAT : NOTES_SHARP
+  return notesArray[noteIndex]
 }

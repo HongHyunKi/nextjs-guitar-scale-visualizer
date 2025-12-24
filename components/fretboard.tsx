@@ -76,7 +76,7 @@ export function Fretboard({
       {/* Fret markers */}
       <div className="absolute top-0 left-0 right-0 flex pointer-events-none">
         <div className="w-12" /> {/* String labels space */}
-        {Array.from({ length: FRETS }, (_, i) => i + 1).map((fret) => {
+        {Array.from({ length: FRETS }, (_, i) => i + 1).map(fret => {
           const showMarker = [3, 5, 7, 9, 12, 15, 17, 19, 21].includes(fret)
           const isDoubleMarker = [12].includes(fret)
           return (
@@ -114,8 +114,10 @@ export function Fretboard({
                 style={{ height: `${2 - stringIndex * 0.2}px` }}
               />
 
-              {Array.from({ length: FRETS }, (_, i) => i + 1).map((fret) => {
-                const note = getNoteFromFret(openString, fret)
+              {Array.from({ length: FRETS }, (_, i) => i + 1).map(fret => {
+                const useFlat =
+                  scaleType === 'minor' || scaleType === 'minor-pentatonic'
+                const note = getNoteFromFret(openString, fret, useFlat)
                 const inScale = isInScale(note)
                 const isRoot = isRootNote(note)
 
@@ -163,7 +165,7 @@ export function Fretboard({
       {/* Fret numbers */}
       <div className="flex mt-4">
         <div className="w-12" /> {/* String labels space */}
-        {Array.from({ length: FRETS }, (_, i) => i + 1).map((fret) => (
+        {Array.from({ length: FRETS }, (_, i) => i + 1).map(fret => (
           <div key={fret} className="flex-1 flex items-center justify-center">
             <span className="text-xs text-muted-foreground font-mono">
               {fret}
