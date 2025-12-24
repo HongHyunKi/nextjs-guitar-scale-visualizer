@@ -1,17 +1,33 @@
-// Note to solfege mapping
+// Note to solfege mapping (movable do - relative to root)
 const SOLFEGE_MAP: Record<number, string> = {
-  0: 'Do',
-  1: 'Di',
-  2: 'Re',
-  3: 'Ri',
-  4: 'Mi',
-  5: 'Fa',
-  6: 'Fi',
-  7: 'Sol',
-  8: 'Si',
-  9: 'La',
-  10: 'Li',
-  11: 'Ti',
+  0: '도',
+  1: '도#',
+  2: '레',
+  3: '레#',
+  4: '미',
+  5: '파',
+  6: '파#',
+  7: '솔',
+  8: '솔#',
+  9: '라',
+  10: '라#',
+  11: '시',
+}
+
+// Fixed solfege mapping (absolute - C is always Do)
+const FIXED_SOLFEGE_MAP: Record<string, string> = {
+  C: '도',
+  'C#': '도#',
+  D: '레',
+  'D#': '레#',
+  E: '미',
+  F: '파',
+  'F#': '파#',
+  G: '솔',
+  'G#': '솔#',
+  A: '라',
+  'A#': '라#',
+  B: '시',
 }
 
 // All notes in chromatic order
@@ -32,6 +48,10 @@ export function noteToSolfege(note: string, rootNote: string): string {
   const rootIndex = getNoteIndex(rootNote)
   const interval = (noteIndex - rootIndex + 12) % 12
   return SOLFEGE_MAP[interval] || note
+}
+
+export function noteToFixedSolfege(note: string): string {
+  return FIXED_SOLFEGE_MAP[note] || note
 }
 
 export function getScaleNotes(

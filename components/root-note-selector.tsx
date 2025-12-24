@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { noteToSolfege } from '@/lib/music-utils'
+import { noteToFixedSolfege } from '@/lib/music-utils'
 
 interface RootNoteSelectorProps {
   rootNote: string
@@ -19,7 +19,7 @@ export function RootNoteSelector({
 }: RootNoteSelectorProps) {
   const getDisplayNote = (note: string) => {
     if (notationType === 'syllabic') {
-      return noteToSolfege(note, note)
+      return noteToFixedSolfege(note)
     }
     return note
   }

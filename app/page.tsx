@@ -49,7 +49,7 @@ export default function Page() {
 
           <div>
             <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Notation Type
+              Notation
             </label>
             <NotationToggle
               type={notationType}

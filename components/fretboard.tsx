@@ -5,7 +5,7 @@ import * as Tone from 'tone'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import {
-  noteToSolfege,
+  noteToFixedSolfege,
   getNoteFromFret,
   getScaleNotes,
 } from '@/lib/music-utils'
@@ -65,7 +65,7 @@ export function Fretboard({
 
   const getDisplayNote = (note: string) => {
     if (notationType === 'syllabic') {
-      return noteToSolfege(note, rootNote)
+      return noteToFixedSolfege(note)
     }
     return note
   }

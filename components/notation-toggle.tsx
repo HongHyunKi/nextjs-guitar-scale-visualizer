@@ -10,7 +10,7 @@ interface NotationToggleProps {
 
 export function NotationToggle({ type, onTypeChange }: NotationToggleProps) {
   return (
-    <div className="relative inline-flex p-1 bg-muted rounded-lg">
+    <div className="relative inline-flex p-1 bg-muted rounded-lg w-auto">
       <button
         onClick={() => onTypeChange('alphabetical')}
         className={cn(
@@ -20,8 +20,9 @@ export function NotationToggle({ type, onTypeChange }: NotationToggleProps) {
             : 'text-muted-foreground hover:text-foreground'
         )}
       >
-        Alphabetical
+        CDE
       </button>
+
       <button
         onClick={() => onTypeChange('syllabic')}
         className={cn(
@@ -31,8 +32,9 @@ export function NotationToggle({ type, onTypeChange }: NotationToggleProps) {
             : 'text-muted-foreground hover:text-foreground'
         )}
       >
-        Syllabic (Solfège)
+        도레미
       </button>
+
       <motion.div
         layoutId="notation-toggle"
         className="absolute top-1 bottom-1 bg-background rounded-md shadow-sm"
