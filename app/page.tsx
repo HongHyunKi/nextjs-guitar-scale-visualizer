@@ -5,6 +5,7 @@ import { Fretboard } from '@/components/fretboard'
 import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
+import { Input } from '@/components/ui/input'
 import { Music } from 'lucide-react'
 import { ScaleType, getScaleNotes, noteToFixedSolfege } from '@/lib/music-utils'
 
@@ -14,8 +15,38 @@ export default function Page() {
   )
   const [rootNote, setRootNote] = useState('C')
   const [scaleType, setScaleType] = useState<ScaleType>('major')
+  const [frets, setFrets] = useState(17)
+  const [isEditingFrets, setIsEditingFrets] = useState(false)
+  const [fretsInput, setFretsInput] = useState('17')
 
   const scaleNotes = getScaleNotes(rootNote, scaleType)
+
+  const handleFretsInputChange = (value: string) => {
+    setFretsInput(value)
+  }
+
+  const handleFretsInputBlur = () => {
+    const numValue = parseInt(fretsInput)
+    if (!isNaN(numValue)) {
+      const clampedValue = Math.max(5, Math.min(22, numValue))
+      setFrets(clampedValue)
+      setFretsInput(clampedValue.toString())
+    } else {
+      setFretsInput(frets.toString())
+    }
+    setIsEditingFrets(false)
+  }
+
+  const handleFretsInputKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === 'Enter') {
+      handleFretsInputBlur()
+    } else if (e.key === 'Escape') {
+      setFretsInput(frets.toString())
+      setIsEditingFrets(false)
+    }
+  }
 
   const getScaleLabel = (type: ScaleType) => {
     switch (type) {
@@ -106,6 +137,62 @@ export default function Page() {
               </div>
             </div>
           </div>
+
+          {/* 프렛 수 조절 */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              Frets
+            </label>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setFrets(Math.max(5, frets - 1))}
+                disabled={frets <= 5}
+                className="w-10 h-10 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-accent-teal/10 hover:border-accent-teal disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card disabled:hover:border-border transition-colors"
+              >
+                <span className="text-lg font-bold text-muted-foreground">
+                  −
+                </span>
+              </button>
+              <div
+                className="w-10 flex items-center justify-center cursor-text"
+                onClick={() => {
+                  if (!isEditingFrets) {
+                    setIsEditingFrets(true)
+                    setFretsInput(frets.toString())
+                  }
+                }}
+              >
+                {isEditingFrets ? (
+                  <Input
+                    type="number"
+                    value={fretsInput}
+                    onChange={e => handleFretsInputChange(e.target.value)}
+                    onBlur={handleFretsInputBlur}
+                    onKeyDown={handleFretsInputKeyDown}
+                    min={5}
+                    max={22}
+                    autoFocus
+                    className="h-10 text-lg font-semibold text-center"
+                  />
+                ) : (
+                  <div className="w-full h-10 px-4 flex items-center justify-center rounded-lg bg-muted/50 border border-border">
+                    <span className="text-sm font-semibold text-foreground">
+                      {frets}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setFrets(Math.min(22, frets + 1))}
+                disabled={frets >= 22}
+                className="w-10 h-10 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-accent-teal/10 hover:border-accent-teal disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card disabled:hover:border-border transition-colors"
+              >
+                <span className="text-lg font-bold text-muted-foreground">
+                  +
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Fretboard */}
@@ -115,6 +202,7 @@ export default function Page() {
               rootNote={rootNote}
               scaleType={scaleType}
               notationType={notationType}
+              frets={frets}
             />
           </div>
 

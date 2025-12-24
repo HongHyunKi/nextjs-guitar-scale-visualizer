@@ -15,15 +15,16 @@ interface FretboardProps {
   rootNote: string
   scaleType: ScaleType
   notationType: 'alphabetical' | 'syllabic'
+  frets?: number
 }
 
 const STRINGS = ['E', 'B', 'G', 'D', 'A', 'E'] // 고음현부터 저음현 순
-const FRETS = 22
 
 export function Fretboard({
   rootNote,
   scaleType,
   notationType,
+  frets = 17,
 }: FretboardProps) {
   const synthRef = useRef<Tone.PolySynth | null>(null)
 
@@ -61,12 +62,12 @@ export function Fretboard({
 
   return (
     <div className="w-full overflow-x-auto pb-6 custom-scrollbar">
-      {/* 최소 너비를 유지하기 위한 컨테이너 (FRETS 수에 따라 동적 계산 가능) */}
+      {/* 최소 너비를 유지하기 위한 컨테이너 (frets 수에 따라 동적 계산 가능) */}
       <div className="min-w-[800px] flex flex-col">
         {/* 1. 상단 마커 영역 */}
         <div className="flex mb-2">
           <div className="w-8" /> {/* 줄 이름 열 정렬용 여백 */}
-          {Array.from({ length: FRETS }, (_, i) => i + 1).map(fret => (
+          {Array.from({ length: frets }, (_, i) => i + 1).map(fret => (
             <div
               key={`marker-${fret}`}
               className="flex-1 min-w-[52px] xl:min-w-[60px] flex flex-col items-center justify-end h-6"
@@ -97,7 +98,7 @@ export function Fretboard({
               </div>
 
               {/* 프렛들 */}
-              {Array.from({ length: FRETS }, (_, i) => i + 1).map(fret => {
+              {Array.from({ length: frets }, (_, i) => i + 1).map(fret => {
                 const useFlat = scaleType.includes('minor')
                 const note = getNoteFromFret(openString, fret, useFlat)
                 const inScale = scaleNotes.includes(note)
@@ -147,7 +148,7 @@ export function Fretboard({
         {/* 3. 하단 프렛 번호 영역 */}
         <div className="flex mt-3">
           <div className="w-8" />
-          {Array.from({ length: FRETS }, (_, i) => i + 1).map(fret => (
+          {Array.from({ length: frets }, (_, i) => i + 1).map(fret => (
             <div
               key={`num-${fret}`}
               className="flex-1 min-w-[52px] xl:min-w-[60px] flex items-center justify-center"
