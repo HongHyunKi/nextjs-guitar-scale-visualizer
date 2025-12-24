@@ -127,11 +127,6 @@ export default function Page() {
                     className="flex flex-col items-center gap-1 px-2 py-1 bg-background rounded"
                   >
                     <span className="text-sm font-medium">{note}</span>
-                    {notationType === 'syllabic' && (
-                      <span className="text-xs text-muted-foreground">
-                        {noteToFixedSolfege(note)}
-                      </span>
-                    )}
                   </div>
                 ))}
               </div>
