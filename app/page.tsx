@@ -6,13 +6,14 @@ import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
 import { Music } from 'lucide-react'
+import { ScaleType } from '@/lib/music-utils'
 
 export default function Page() {
   const [notationType, setNotationType] = useState<'alphabetical' | 'syllabic'>(
     'alphabetical'
   )
   const [rootNote, setRootNote] = useState('C')
-  const [scaleType, setScaleType] = useState<'major' | 'pentatonic'>('major')
+  const [scaleType, setScaleType] = useState<ScaleType>('major')
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">

@@ -8,11 +8,12 @@ import {
   noteToFixedSolfege,
   getNoteFromFret,
   getScaleNotes,
+  ScaleType,
 } from '@/lib/music-utils'
 
 interface FretboardProps {
   rootNote: string
-  scaleType: 'major' | 'pentatonic'
+  scaleType: ScaleType
   notationType: 'alphabetical' | 'syllabic'
 }
 

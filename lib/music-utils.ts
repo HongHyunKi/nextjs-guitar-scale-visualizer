@@ -30,14 +30,23 @@ const FIXED_SOLFEGE_MAP: Record<string, string> = {
   B: '시',
 }
 
+// Scale type definition
+export type ScaleType = 'major' | 'minor' | 'major-pentatonic' | 'minor-pentatonic'
+
 // All notes in chromatic order
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
-// Major scale intervals (W-W-H-W-W-W-H)
+// Major scale intervals (W-W-H-W-W-W-H) - 1, 2, 3, 4, 5, 6, 7
 const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11]
 
-// Pentatonic scale intervals
-const PENTATONIC_INTERVALS = [0, 2, 4, 7, 9]
+// Natural Minor scale intervals (W-H-W-W-H-W-W) - 1, 2, b3, 4, 5, b6, b7
+const MINOR_INTERVALS = [0, 2, 3, 5, 7, 8, 10]
+
+// Major Pentatonic scale intervals - 1, 2, 3, 5, 6
+const MAJOR_PENTATONIC_INTERVALS = [0, 2, 4, 7, 9]
+
+// Minor Pentatonic scale intervals - 1, b3, 4, 5, b7
+const MINOR_PENTATONIC_INTERVALS = [0, 3, 5, 7, 10]
 
 export function getNoteIndex(note: string): number {
   return NOTES.indexOf(note)
@@ -56,11 +65,27 @@ export function noteToFixedSolfege(note: string): string {
 
 export function getScaleNotes(
   rootNote: string,
-  scaleType: 'major' | 'pentatonic'
+  scaleType: ScaleType
 ): string[] {
   const rootIndex = getNoteIndex(rootNote)
-  const intervals =
-    scaleType === 'major' ? MAJOR_INTERVALS : PENTATONIC_INTERVALS
+
+  let intervals: number[]
+  switch (scaleType) {
+    case 'major':
+      intervals = MAJOR_INTERVALS
+      break
+    case 'minor':
+      intervals = MINOR_INTERVALS
+      break
+    case 'major-pentatonic':
+      intervals = MAJOR_PENTATONIC_INTERVALS
+      break
+    case 'minor-pentatonic':
+      intervals = MINOR_PENTATONIC_INTERVALS
+      break
+    default:
+      intervals = MAJOR_INTERVALS
+  }
 
   return intervals.map(interval => {
     const noteIndex = (rootIndex + interval) % 12
