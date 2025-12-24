@@ -7,7 +7,7 @@ import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
 import { Input } from '@/components/ui/input'
 import { Music } from 'lucide-react'
-import { ScaleType, getScaleNotes, noteToFixedSolfege } from '@/lib/music-utils'
+import { ScaleType, getScaleNotes } from '@/lib/music-utils'
 
 export default function Page() {
   const [notationType, setNotationType] = useState<'alphabetical' | 'syllabic'>(
@@ -192,7 +192,7 @@ export default function Page() {
 
         {/* Fretboard */}
         <div className="relative">
-          <div className="bg-card border border-border rounded-xl p-6 overflow-x-auto overflow-y-visible custom-scrollbar">
+          <div className="bg-card border border-border rounded-xl p-6 pr-0 xl:pr-6 overflow-x-auto overflow-y-visible custom-scrollbar">
             <Fretboard
               rootNote={rootNote}
               scaleType={scaleType}

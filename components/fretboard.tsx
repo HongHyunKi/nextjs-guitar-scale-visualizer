@@ -66,7 +66,7 @@ export function Fretboard({
       <div className="min-w-[800px] flex flex-col">
         {/* 1. 상단 마커 영역 */}
         <div className="flex mb-2">
-          <div className="w-8" /> {/* 줄 이름 열 정렬용 여백 */}
+          <div className="w-8 min-w-4" /> {/* 줄 이름 열 정렬용 여백 */}
           {Array.from({ length: frets }, (_, i) => i + 1).map(fret => (
             <div
               key={`marker-${fret}`}
@@ -93,7 +93,7 @@ export function Fretboard({
               className="flex items-stretch h-12"
             >
               {/* 줄 이름 표시 */}
-              <div className="w-8 flex items-center justify-center text-xs font-medium text-muted-foreground">
+              <div className="min-w-4 w-8 flex items-center justify-center text-xs font-medium text-muted-foreground">
                 {openString}
               </div>
 
@@ -147,7 +147,7 @@ export function Fretboard({
 
         {/* 3. 하단 프렛 번호 영역 */}
         <div className="flex mt-3">
-          <div className="w-8" />
+          <div className="w-8 min-w-4" />
           {Array.from({ length: frets }, (_, i) => i + 1).map(fret => (
             <div
               key={`num-${fret}`}
