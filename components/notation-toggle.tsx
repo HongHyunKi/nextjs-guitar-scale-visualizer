@@ -4,8 +4,8 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 interface NotationToggleProps {
-  type: 'alphabetical' | 'syllabic'
-  onTypeChange: (type: 'alphabetical' | 'syllabic') => void
+  type: 'alphabetical' | 'syllabic' | 'intervals'
+  onTypeChange: (type: 'alphabetical' | 'syllabic' | 'intervals') => void
 }
 
 export function NotationToggle({ type, onTypeChange }: NotationToggleProps) {
@@ -35,13 +35,35 @@ export function NotationToggle({ type, onTypeChange }: NotationToggleProps) {
         도레미
       </button>
 
+      <button
+        onClick={() => onTypeChange('intervals')}
+        className={cn(
+          'relative z-10 px-4 py-2 text-sm font-medium transition-colors rounded-md',
+          type === 'intervals'
+            ? 'text-foreground'
+            : 'text-muted-foreground hover:text-foreground'
+        )}
+      >
+        123
+      </button>
+
       <motion.div
         layoutId="notation-toggle"
         className="absolute top-1 bottom-1 bg-background rounded-md shadow-sm"
         initial={false}
         animate={{
-          left: type === 'alphabetical' ? '4px' : '50%',
-          right: type === 'alphabetical' ? '50%' : '4px',
+          left:
+            type === 'alphabetical'
+              ? '4px'
+              : type === 'syllabic'
+                ? 'calc(33.33% + 1.33px)'
+                : 'calc(66.67% + 2.67px)',
+          right:
+            type === 'alphabetical'
+              ? 'calc(66.67% + 2.67px)'
+              : type === 'syllabic'
+                ? 'calc(33.33% + 1.33px)'
+                : '4px',
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       />

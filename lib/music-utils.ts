@@ -35,6 +35,22 @@ const FIXED_SOLFEGE_MAP: Record<string, string> = {
   B: '시',
 }
 
+// Interval notation mapping (scale degrees)
+const INTERVAL_MAP: Record<number, string> = {
+  0: '1',
+  1: 'b2',
+  2: '2',
+  3: 'b3',
+  4: '3',
+  5: '4',
+  6: 'b5',
+  7: '5',
+  8: 'b6',
+  9: '6',
+  10: 'b7',
+  11: '7',
+}
+
 // Scale type definition
 export type ScaleType = 'major' | 'minor' | 'major-pentatonic' | 'minor-pentatonic'
 
@@ -72,6 +88,13 @@ export function noteToSolfege(note: string, rootNote: string): string {
 
 export function noteToFixedSolfege(note: string): string {
   return FIXED_SOLFEGE_MAP[note] || note
+}
+
+export function noteToInterval(note: string, rootNote: string): string {
+  const noteIndex = getNoteIndex(note)
+  const rootIndex = getNoteIndex(rootNote)
+  const interval = (noteIndex - rootIndex + 12) % 12
+  return INTERVAL_MAP[interval] || note
 }
 
 export function getScaleNotes(

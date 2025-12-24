@@ -10,9 +10,9 @@ import { Music } from 'lucide-react'
 import { ScaleType, getScaleNotes } from '@/lib/music-utils'
 
 export default function Page() {
-  const [notationType, setNotationType] = useState<'alphabetical' | 'syllabic'>(
-    'alphabetical'
-  )
+  const [notationType, setNotationType] = useState<
+    'alphabetical' | 'syllabic' | 'intervals'
+  >('alphabetical')
   const [rootNote, setRootNote] = useState('C')
   const [scaleType, setScaleType] = useState<ScaleType>('major')
   const [frets, setFrets] = useState(17)

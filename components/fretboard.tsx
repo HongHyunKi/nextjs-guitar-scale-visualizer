@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import {
   noteToFixedSolfege,
+  noteToInterval,
   getNoteFromFret,
   getScaleNotes,
   ScaleType,
@@ -14,7 +15,7 @@ import {
 interface FretboardProps {
   rootNote: string
   scaleType: ScaleType
-  notationType: 'alphabetical' | 'syllabic'
+  notationType: 'alphabetical' | 'syllabic' | 'intervals'
   frets?: number
 }
 
@@ -57,7 +58,12 @@ export function Fretboard({
   }
 
   const getDisplayNote = (note: string) => {
-    return notationType === 'syllabic' ? noteToFixedSolfege(note) : note
+    if (notationType === 'syllabic') {
+      return noteToFixedSolfege(note)
+    } else if (notationType === 'intervals') {
+      return noteToInterval(note, rootNote)
+    }
+    return note
   }
 
   return (

@@ -7,7 +7,7 @@ import { noteToFixedSolfege } from '@/lib/music-utils'
 interface RootNoteSelectorProps {
   rootNote: string
   onRootNoteChange: (note: string) => void
-  notationType: 'alphabetical' | 'syllabic'
+  notationType: 'alphabetical' | 'syllabic' | 'intervals'
 }
 
 const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
