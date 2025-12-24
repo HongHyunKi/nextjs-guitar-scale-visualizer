@@ -81,10 +81,14 @@ export default function Page() {
               scaleType={scaleType}
               onScaleTypeChange={setScaleType}
             />
+          </div>
+
+          <div className="flex-1 min-w-[200px]">
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              {rootNote} {getScaleLabel(scaleType)} 구성음
+            </label>
+
             <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-              <div className="text-xs text-muted-foreground mb-1">
-                {rootNote} {getScaleLabel(scaleType)} 구성음
-              </div>
               <div className="flex flex-wrap gap-2">
                 {scaleNotes.map((note, index) => (
                   <div
