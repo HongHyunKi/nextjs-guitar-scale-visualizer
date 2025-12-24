@@ -18,7 +18,7 @@ interface FretboardProps {
 }
 
 const STRINGS = ['E', 'B', 'G', 'D', 'A', 'E'] // Standard tuning (high to low)
-const FRETS = 22
+const FRETS = 20
 
 export function Fretboard({
   rootNote,
@@ -72,7 +72,7 @@ export function Fretboard({
   }
 
   return (
-    <div className="relative min-w-[800px]">
+    <div className="relative w-fit">
       {/* Fret markers */}
       <div className="absolute top-0 left-0 right-0 flex pointer-events-none">
         <div className="w-12" /> {/* String labels space */}
@@ -82,7 +82,7 @@ export function Fretboard({
           return (
             <div
               key={fret}
-              className="flex-1 flex items-start justify-center pt-1"
+              className="flex-1 min-w-[50px] xl:min-w-[60px] flex items-start justify-center pt-1"
             >
               {showMarker && (
                 <div className="flex flex-col gap-1">
@@ -124,7 +124,7 @@ export function Fretboard({
                 return (
                   <div
                     key={fret}
-                    className="flex-1 flex items-center justify-center relative"
+                    className="flex-1 min-w-[50px] xl:min-w-[60px] flex items-center justify-center relative"
                   >
                     {/* Fret line */}
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-8 bg-border" />
@@ -166,7 +166,10 @@ export function Fretboard({
       <div className="flex mt-4">
         <div className="w-12" /> {/* String labels space */}
         {Array.from({ length: FRETS }, (_, i) => i + 1).map(fret => (
-          <div key={fret} className="flex-1 flex items-center justify-center">
+          <div
+            key={fret}
+            className="flex-1 min-w-[50px] flex items-center justify-center"
+          >
             <span className="text-xs text-muted-foreground font-mono">
               {fret}
             </span>

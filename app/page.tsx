@@ -109,12 +109,17 @@ export default function Page() {
         </div>
 
         {/* Fretboard */}
-        <div className="bg-card border border-border rounded-xl p-6 overflow-x-auto overflow-y-visible">
-          <Fretboard
-            rootNote={rootNote}
-            scaleType={scaleType}
-            notationType={notationType}
-          />
+        <div className="relative">
+          <div className="bg-card border border-border rounded-xl p-6 overflow-x-auto overflow-y-visible custom-scrollbar">
+            <Fretboard
+              rootNote={rootNote}
+              scaleType={scaleType}
+              notationType={notationType}
+            />
+          </div>
+
+          {/* Scroll indicator */}
+          <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-accent-teal/60 via-accent-teal/80 to-accent-teal/60 pointer-events-none opacity-70 xl:opacity-0 rounded-r-xl shadow-lg shadow-accent-teal/50"></div>
         </div>
 
         {/* Legend */}
