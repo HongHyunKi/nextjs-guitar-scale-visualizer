@@ -3,70 +3,43 @@
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
+type NotationType = 'alphabetical' | 'syllabic' | 'intervals'
+
 interface NotationToggleProps {
-  type: 'alphabetical' | 'syllabic' | 'intervals'
-  onTypeChange: (type: 'alphabetical' | 'syllabic' | 'intervals') => void
+  type: NotationType
+  onTypeChange: (type: NotationType) => void
 }
 
 export function NotationToggle({ type, onTypeChange }: NotationToggleProps) {
+  const items: { type: NotationType; label: string }[] = [
+    { type: 'alphabetical', label: 'CDE' },
+    { type: 'syllabic', label: '도레미' },
+    { type: 'intervals', label: '123' },
+  ]
+
   return (
-    <div className="relative inline-flex p-1 bg-muted rounded-lg w-auto">
-      <button
-        onClick={() => onTypeChange('alphabetical')}
-        className={cn(
-          'relative z-10 px-4 py-2 text-sm font-medium transition-colors rounded-md',
-          type === 'alphabetical'
-            ? 'text-foreground'
-            : 'text-muted-foreground hover:text-foreground'
-        )}
-      >
-        CDE
-      </button>
-
-      <button
-        onClick={() => onTypeChange('syllabic')}
-        className={cn(
-          'relative z-10 px-4 py-2 text-sm font-medium transition-colors rounded-md',
-          type === 'syllabic'
-            ? 'text-foreground'
-            : 'text-muted-foreground hover:text-foreground'
-        )}
-      >
-        도레미
-      </button>
-
-      <button
-        onClick={() => onTypeChange('intervals')}
-        className={cn(
-          'relative z-10 px-4 py-2 text-sm font-medium transition-colors rounded-md',
-          type === 'intervals'
-            ? 'text-foreground'
-            : 'text-muted-foreground hover:text-foreground'
-        )}
-      >
-        123
-      </button>
-
-      <motion.div
-        layoutId="notation-toggle"
-        className="absolute top-1 bottom-1 bg-background rounded-md shadow-sm"
-        initial={false}
-        animate={{
-          left:
-            type === 'alphabetical'
-              ? '4px'
-              : type === 'syllabic'
-                ? 'calc(33.33% + 1.33px)'
-                : 'calc(66.67% + 2.67px)',
-          right:
-            type === 'alphabetical'
-              ? 'calc(66.67% + 2.67px)'
-              : type === 'syllabic'
-                ? 'calc(33.33% + 1.33px)'
-                : '4px',
-        }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      />
+    <div className="relative inline-flex p-1 bg-muted rounded-lg">
+      {items.map(item => (
+        <button
+          key={item.type}
+          onClick={() => onTypeChange(item.type)}
+          className={cn(
+            'relative px-4 py-2 text-sm font-medium rounded-md transition-colors z-10',
+            type === item.type
+              ? 'text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          {type === item.type && (
+            <motion.div
+              layoutId="notation-toggle"
+              className="absolute inset-0 bg-background rounded-md shadow-sm z-[-1]"
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            />
+          )}
+          {item.label}
+        </button>
+      ))}
     </div>
   )
 }
