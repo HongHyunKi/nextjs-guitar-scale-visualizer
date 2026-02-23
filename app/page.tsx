@@ -5,9 +5,11 @@ import { Fretboard } from '@/components/fretboard'
 import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
+import { CAGEDSelector } from '@/components/caged-selector'
 import { Input } from '@/components/ui/input'
 import { Music } from 'lucide-react'
 import { ScaleType, getScaleNotes } from '@/lib/music-utils'
+import { CAGEDSelection } from '@/lib/caged-utils'
 
 export default function Page() {
   const [notationType, setNotationType] = useState<
@@ -16,6 +18,9 @@ export default function Page() {
   const [rootNote, setRootNote] = useState('C')
   const [scaleType, setScaleType] = useState<ScaleType>('major')
   const [frets, setFrets] = useState(17)
+  const [cagedEnabled, setCagedEnabled] = useState(false)
+  const [selectedCAGEDShape, setSelectedCAGEDShape] =
+    useState<CAGEDSelection>('all')
   const [isEditingFrets, setIsEditingFrets] = useState(false)
   const [fretsInput, setFretsInput] = useState('17')
 
@@ -188,6 +193,19 @@ export default function Page() {
               </button>
             </div>
           </div>
+
+          {/* CAGED System */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              CAGED System
+            </label>
+            <CAGEDSelector
+              enabled={cagedEnabled}
+              onEnabledChange={setCagedEnabled}
+              selectedShape={selectedCAGEDShape}
+              onShapeChange={setSelectedCAGEDShape}
+            />
+          </div>
         </div>
 
         {/* Fretboard */}
@@ -198,6 +216,8 @@ export default function Page() {
               scaleType={scaleType}
               notationType={notationType}
               frets={frets}
+              cagedEnabled={cagedEnabled}
+              selectedCAGEDShape={selectedCAGEDShape}
             />
           </div>
 
@@ -206,15 +226,40 @@ export default function Page() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-6 p-4 bg-card/50 border border-border rounded-lg">
+        <div className="flex flex-wrap items-center gap-6 p-4 bg-card/50 border border-border rounded-lg">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-accent-orange" />
             <span className="text-sm text-muted-foreground">Root Note</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-accent-teal" />
-            <span className="text-sm text-muted-foreground">Scale Degree</span>
-          </div>
+          {cagedEnabled ? (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-caged-c" />
+                <span className="text-sm text-muted-foreground">C Shape</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-caged-a" />
+                <span className="text-sm text-muted-foreground">A Shape</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-caged-g" />
+                <span className="text-sm text-muted-foreground">G Shape</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-caged-e" />
+                <span className="text-sm text-muted-foreground">E Shape</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-caged-d" />
+                <span className="text-sm text-muted-foreground">D Shape</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-accent-teal" />
+              <span className="text-sm text-muted-foreground">Scale Degree</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

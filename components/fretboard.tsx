@@ -11,12 +11,20 @@ import {
   getScaleNotes,
   ScaleType,
 } from '@/lib/music-utils'
+import {
+  CAGEDShape,
+  CAGEDSelection,
+  isInCAGEDPattern,
+  CAGED_COLORS,
+} from '@/lib/caged-utils'
 
 interface FretboardProps {
   rootNote: string
   scaleType: ScaleType
   notationType: 'alphabetical' | 'syllabic' | 'intervals'
   frets?: number
+  cagedEnabled?: boolean
+  selectedCAGEDShape?: CAGEDSelection
 }
 
 const STRINGS = ['E', 'B', 'G', 'D', 'A', 'E'] // 고음현부터 저음현 순
@@ -26,6 +34,8 @@ export function Fretboard({
   scaleType,
   notationType,
   frets = 17,
+  cagedEnabled = false,
+  selectedCAGEDShape = 'all',
 }: FretboardProps) {
   const synthRef = useRef<Tone.PolySynth | null>(null)
 
@@ -64,6 +74,83 @@ export function Fretboard({
       return noteToInterval(note, rootNote)
     }
     return note
+  }
+
+  // CAGED 형태 확인 및 색상 반환
+  const getCAGEDInfo = (
+    stringIndex: number,
+    fret: number
+  ): { inPattern: boolean; shape: CAGEDShape | null; colorClass: string } => {
+    if (!cagedEnabled) {
+      return { inPattern: false, shape: null, colorClass: '' }
+    }
+
+    const shapes: CAGEDShape[] = ['C', 'A', 'G', 'E', 'D']
+
+    // 특정 형태만 선택된 경우
+    if (selectedCAGEDShape !== 'all') {
+      const inPattern = isInCAGEDPattern(
+        stringIndex,
+        fret,
+        rootNote,
+        selectedCAGEDShape,
+        scaleType
+      )
+      return {
+        inPattern,
+        shape: inPattern ? selectedCAGEDShape : null,
+        colorClass: inPattern ? `bg-${CAGED_COLORS[selectedCAGEDShape]}` : '',
+      }
+    }
+
+    // 'all' 모드: 모든 형태 확인
+    for (const shape of shapes) {
+      if (isInCAGEDPattern(stringIndex, fret, rootNote, shape, scaleType)) {
+        return {
+          inPattern: true,
+          shape,
+          colorClass: `bg-${CAGED_COLORS[shape]}`,
+        }
+      }
+    }
+
+    return { inPattern: false, shape: null, colorClass: '' }
+  }
+
+  // 노트 색상 클래스 결정
+  const getNoteColorClass = (
+    isRoot: boolean,
+    stringIndex: number,
+    fret: number
+  ): string => {
+    if (isRoot) {
+      return 'bg-accent-orange text-background shadow-lg shadow-accent-orange/40'
+    }
+
+    if (cagedEnabled) {
+      const { inPattern, colorClass } = getCAGEDInfo(stringIndex, fret)
+      if (inPattern && colorClass) {
+        return `${colorClass} text-background shadow-md`
+      }
+    }
+
+    return 'bg-accent-teal text-background shadow-md shadow-accent-teal/30'
+  }
+
+  // CAGED 모드에서 노트 표시 여부 결정
+  const shouldShowNote = (
+    inScale: boolean,
+    stringIndex: number,
+    fret: number
+  ): boolean => {
+    if (!inScale) return false
+
+    if (cagedEnabled) {
+      const { inPattern } = getCAGEDInfo(stringIndex, fret)
+      return inPattern
+    }
+
+    return true
   }
 
   return (
@@ -125,7 +212,7 @@ export function Fretboard({
                     />
 
                     {/* 음표 도트 */}
-                    {inScale && (
+                    {shouldShowNote(inScale, stringIndex, fret) && (
                       <motion.button
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
@@ -134,9 +221,7 @@ export function Fretboard({
                         onClick={() => playNote(note)}
                         className={cn(
                           'relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all shadow-sm',
-                          isRoot
-                            ? 'bg-accent-orange text-background shadow-lg shadow-accent-orange/40'
-                            : 'bg-accent-teal text-background shadow-md shadow-accent-teal/30'
+                          getNoteColorClass(isRoot, stringIndex, fret)
                         )}
                       >
                         <span className="drop-shadow-sm">
