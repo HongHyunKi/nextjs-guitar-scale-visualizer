@@ -1,4 +1,4 @@
-import { ScaleType, getNoteIndex } from './music-utils'
+import { getNoteIndex } from './music-utils'
 
 export type CAGEDShape = 'C' | 'A' | 'G' | 'E' | 'D'
 export type CAGEDSelection = CAGEDShape | 'all'
@@ -14,301 +14,100 @@ export const CAGED_BG_CLASSES: Record<CAGEDShape, string> = {
   D: 'bg-caged-d',
 }
 
-// CAGED 형태별 기준점 (6번현에서의 루트 위치를 기준으로 한 오프셋)
-// E shape: 오픈 코드 기준, 6번현 루트
-// D shape: 6번현 루트에서 +2 프렛
-// C shape: 6번현 루트에서 +3 프렛
-// A shape: 6번현 루트에서 +5 프렛
-// G shape: 6번현 루트에서 +7 프렛
-const CAGED_ROOT_OFFSETS: Record<CAGEDShape, number> = {
-  E: 0,
-  D: 2,
-  C: 3,
-  A: 5,
-  G: 7,
+/**
+ * 각 CAGED 형태의 오픈 코드 기준 음 인덱스
+ *
+ * 오픈 코드에서 루트 위치:
+ * - E shape: 루트 = 배레 프렛 (6번현, open E = 4)
+ * - A shape: 루트 = 배레 프렛 (5번현, open A = 9)
+ * - G shape: 루트 = 배레 + 3   (open G 코드에서 루트가 6번현 3프렛, G = 7)
+ * - D shape: 루트 = 배레 프렛  (4번현, open D = 2)
+ * - C shape: 루트 = 배레 + 3   (open C 코드에서 루트가 5번현 3프렛, C = 0)
+ *
+ * → 배레 프렛 = (rootIndex - BASE_NOTE + 12) % 12
+ */
+const SHAPE_BASE_NOTE: Record<CAGEDShape, number> = {
+  E: 4, // E
+  A: 9, // A
+  G: 7, // G
+  D: 2, // D
+  C: 0, // C
 }
 
-// 각 CAGED 형태별 스케일 패턴 정의
-// [줄 인덱스(0=고음E, 5=저음E), 프렛 오프셋] 형태로 정의
-// 메이저 스케일 CAGED 패턴 (루트 기준 상대적 위치)
-const MAJOR_SCALE_PATTERNS: Record<CAGEDShape, [number, number][]> = {
-  E: [
-    // E shape (0-3 프렛 범위)
-    [5, 0], [5, 2], [5, 3],  // 저음 E현
-    [4, 0], [4, 2], [4, 3],  // A현
-    [3, 0], [3, 2],          // D현
-    [2, 0], [2, 2],          // G현
-    [1, 0], [1, 2], [1, 3],  // B현
-    [0, 0], [0, 2], [0, 3],  // 고음 E현
-  ],
-  D: [
-    // D shape (2-5 프렛 범위)
-    [5, 2], [5, 3], [5, 5],
-    [4, 2], [4, 3], [4, 5],
-    [3, 2], [3, 4], [3, 5],
-    [2, 2], [2, 4], [2, 5],
-    [1, 3], [1, 5],
-    [0, 2], [0, 3], [0, 5],
-  ],
-  C: [
-    // C shape (3-6 프렛 범위)
-    [5, 3], [5, 5],
-    [4, 3], [4, 5], [4, 7],
-    [3, 4], [3, 5], [3, 7],
-    [2, 5], [2, 7],
-    [1, 5], [1, 6], [1, 8],
-    [0, 5], [0, 7], [0, 8],
-  ],
-  A: [
-    // A shape (5-8 프렛 범위)
-    [5, 5], [5, 7], [5, 8],
-    [4, 5], [4, 7],
-    [3, 5], [3, 7],
-    [2, 5], [2, 7], [2, 9],
-    [1, 5], [1, 7], [1, 8],
-    [0, 5], [0, 7], [0, 8],
-  ],
-  G: [
-    // G shape (7-10 프렛 범위)
-    [5, 7], [5, 8], [5, 10],
-    [4, 7], [4, 9], [4, 10],
-    [3, 7], [3, 9], [3, 10],
-    [2, 7], [2, 9],
-    [1, 8], [1, 10],
-    [0, 7], [0, 8], [0, 10],
-  ],
+function getBarreFret(rootIndex: number, shape: CAGEDShape): number {
+  return (rootIndex - SHAPE_BASE_NOTE[shape] + 12) % 12
 }
 
-// 마이너 스케일 CAGED 패턴 (3도가 반음 내려감)
-const MINOR_SCALE_PATTERNS: Record<CAGEDShape, [number, number][]> = {
-  E: [
-    [5, 0], [5, 2], [5, 3],
-    [4, 0], [4, 2], [4, 3],
-    [3, 0], [3, 2],
-    [2, 0], [2, 1],          // G현 3도가 반음 내려감
-    [1, 0], [1, 1], [1, 3],  // B현 3도가 반음 내려감
-    [0, 0], [0, 2], [0, 3],
-  ],
-  D: [
-    [5, 2], [5, 3], [5, 5],
-    [4, 2], [4, 3], [4, 5],
-    [3, 2], [3, 4], [3, 5],
-    [2, 2], [2, 3], [2, 5],  // 마이너 조정
-    [1, 3], [1, 5],
-    [0, 2], [0, 3], [0, 5],
-  ],
-  C: [
-    [5, 3], [5, 5],
-    [4, 3], [4, 5], [4, 6],  // 마이너 조정
-    [3, 4], [3, 5], [3, 7],
-    [2, 5], [2, 6],          // 마이너 조정
-    [1, 5], [1, 6], [1, 8],
-    [0, 5], [0, 6], [0, 8],  // 마이너 조정
-  ],
-  A: [
-    [5, 5], [5, 7], [5, 8],
-    [4, 5], [4, 7],
-    [3, 5], [3, 7],
-    [2, 5], [2, 6], [2, 8],  // 마이너 조정
-    [1, 5], [1, 6], [1, 8],  // 마이너 조정
-    [0, 5], [0, 7], [0, 8],
-  ],
-  G: [
-    [5, 7], [5, 8], [5, 10],
-    [4, 7], [4, 9], [4, 10],
-    [3, 7], [3, 9], [3, 10],
-    [2, 7], [2, 8],          // 마이너 조정
-    [1, 8], [1, 10],
-    [0, 7], [0, 8], [0, 10],
-  ],
-}
-
-// 메이저 펜타토닉 CAGED 패턴 (1, 2, 3, 5, 6 도)
-const MAJOR_PENTATONIC_PATTERNS: Record<CAGEDShape, [number, number][]> = {
-  E: [
-    [5, 0], [5, 2],
-    [4, 0], [4, 2],
-    [3, -1], [3, 2],
-    [2, -1], [2, 2],
-    [1, 0], [1, 2],
-    [0, 0], [0, 2],
-  ],
-  D: [
-    [5, 2], [5, 4],
-    [4, 2], [4, 4],
-    [3, 2], [3, 4],
-    [2, 2], [2, 4],
-    [1, 2], [1, 5],
-    [0, 2], [0, 5],
-  ],
-  C: [
-    [5, 4], [5, 7],
-    [4, 4], [4, 7],
-    [3, 4], [3, 7],
-    [2, 5], [2, 7],
-    [1, 5], [1, 7],
-    [0, 5], [0, 7],
-  ],
-  A: [
-    [5, 5], [5, 7],
-    [4, 5], [4, 7],
-    [3, 4], [3, 7],
-    [2, 4], [2, 7],
-    [1, 5], [1, 8],
-    [0, 5], [0, 7],
-  ],
-  G: [
-    [5, 7], [5, 10],
-    [4, 7], [4, 9],
-    [3, 7], [3, 9],
-    [2, 7], [2, 9],
-    [1, 7], [1, 10],
-    [0, 7], [0, 10],
-  ],
-}
-
-// 마이너 펜타토닉 CAGED 패턴 (1, b3, 4, 5, b7 도)
-const MINOR_PENTATONIC_PATTERNS: Record<CAGEDShape, [number, number][]> = {
-  E: [
-    [5, 0], [5, 3],
-    [4, 0], [4, 2],
-    [3, 0], [3, 2],
-    [2, 0], [2, 2],
-    [1, 0], [1, 3],
-    [0, 0], [0, 3],
-  ],
-  D: [
-    [5, 3], [5, 5],
-    [4, 2], [4, 5],
-    [3, 2], [3, 5],
-    [2, 2], [2, 5],
-    [1, 3], [1, 5],
-    [0, 3], [0, 5],
-  ],
-  C: [
-    [5, 5], [5, 8],
-    [4, 5], [4, 7],
-    [3, 5], [3, 7],
-    [2, 5], [2, 7],
-    [1, 5], [1, 8],
-    [0, 5], [0, 8],
-  ],
-  A: [
-    [5, 5], [5, 8],
-    [4, 5], [4, 7],
-    [3, 5], [3, 7],
-    [2, 5], [2, 8],
-    [1, 5], [1, 8],
-    [0, 5], [0, 8],
-  ],
-  G: [
-    [5, 8], [5, 10],
-    [4, 7], [4, 10],
-    [3, 7], [3, 10],
-    [2, 8], [2, 10],
-    [1, 8], [1, 10],
-    [0, 8], [0, 10],
-  ],
-}
-
-function getPatternForScaleType(
-  scaleType: ScaleType
-): Record<CAGEDShape, [number, number][]> {
-  switch (scaleType) {
-    case 'major':
-      return MAJOR_SCALE_PATTERNS
-    case 'minor':
-      return MINOR_SCALE_PATTERNS
-    case 'major-pentatonic':
-      return MAJOR_PENTATONIC_PATTERNS
-    case 'minor-pentatonic':
-      return MINOR_PENTATONIC_PATTERNS
-    default:
-      return MAJOR_SCALE_PATTERNS
-  }
+function getSortedBarres(rootIndex: number): { shape: CAGEDShape; barre: number }[] {
+  return CAGED_SHAPES
+    .map(shape => ({ shape, barre: getBarreFret(rootIndex, shape) }))
+    .sort((a, b) => a.barre - b.barre)
 }
 
 /**
- * 특정 프렛 위치가 CAGED 패턴에 포함되는지 확인
+ * All 뷰에서 각 프렛의 CAGED 형태를 결정 (버킷 방식 — 겹침 없음)
+ *
+ * 각 형태는 자신의 배레 프렛부터 다음 형태의 배레 프렛 직전까지 담당.
+ * 배레 프렛 자체는 그 형태에 속함 (경계는 해당 형태 소속).
+ *
+ * 검증 (C 메이저): C[0,3) A[3,5) G[5,8) E[8,10) D[10,12)
+ * - 2번현 fret1 (C=root) → C ✓  /  5번현 fret3 (C=root) → A ✓
+ * - 3번현 fret5 (C=root) → G ✓  /  6번현 fret8 (C=root) → E ✓
+ * - 4번현 fret10 (C=root) → D ✓
  */
-export function isInCAGEDPattern(
-  stringIndex: number, // 0 = 고음 E, 5 = 저음 E
-  fret: number,
-  rootNote: string,
-  shape: CAGEDShape,
-  scaleType: ScaleType
-): boolean {
+export function getCAGEDShapeForFret(fret: number, rootNote: string): CAGEDShape {
   const rootIndex = getNoteIndex(rootNote)
-  const patterns = getPatternForScaleType(scaleType)
-  const pattern = patterns[shape]
+  const sorted = getSortedBarres(rootIndex)
+  const f = fret % 12
 
-  // E 형태 기준으로 루트 위치 계산 (저음 E현의 루트 프렛)
-  const baseRootFret = rootIndex === 0 ? 12 : rootIndex
-
-  for (const [patternString, patternFretOffset] of pattern) {
-    if (patternString !== stringIndex) continue
-
-    // 패턴 프렛 = 기준 루트 프렛 + 패턴 오프셋
-    const patternFret = baseRootFret + patternFretOffset
-
-    // 옥타브 범위 내에서 확인 (0-12, 12-24 프렛 등)
-    if (
-      fret === patternFret ||
-      fret === patternFret - 12 ||
-      fret === patternFret + 12
-    ) {
-      return true
+  let result = sorted[sorted.length - 1] // 기본값: wrap-around 처리
+  for (const entry of sorted) {
+    if (entry.barre <= f) {
+      result = entry
+    } else {
+      break
     }
   }
+  return result.shape
+}
 
-  return false
+// Shape별 barre로부터의 low/high 오프셋
+// C 메이저 기준 검증: C[1,3] A[2,6] G[4,8] E[7,10] D[9,13]
+const SHAPE_LOW_OFFSET: Record<CAGEDShape, number> = {
+  C: 1,   // open C 코드는 1프렛부터 시작
+  A: -1,
+  G: -1,
+  E: -1,
+  D: -1,
+}
+
+const SHAPE_HIGH_OFFSET: Record<CAGEDShape, number> = {
+  C: 0,
+  A: 1,   // A shape는 next barre +1까지 포함
+  G: 0,
+  E: 0,
+  D: 1,   // D shape도 next barre +1까지 포함 (wrap 포함)
 }
 
 /**
- * 특정 프렛 위치가 어떤 CAGED 형태에 속하는지 반환
- * 여러 형태에 속할 수 있으므로 첫 번째 일치 형태 반환
+ * 단일 Shape 선택 시 프렛이 해당 Shape 범위에 속하는지 확인
+ *
+ * C 메이저 기준: C[1,3] A[2,6] G[4,8] E[7,10] D[9,13]
+ * 인접 shape 간 2프렛 겹침 (CAGED shared notes — 정상)
  */
-export function getCAGEDShapeForPosition(
-  stringIndex: number,
-  fret: number,
-  rootNote: string,
-  scaleType: ScaleType
-): CAGEDShape | null {
-  for (const shape of CAGED_SHAPES) {
-    if (isInCAGEDPattern(stringIndex, fret, rootNote, shape, scaleType)) {
-      return shape
-    }
-  }
+export function isInCAGEDShapeRange(fret: number, rootNote: string, shape: CAGEDShape): boolean {
+  const rootIndex = getNoteIndex(rootNote)
+  const sorted = getSortedBarres(rootIndex)
 
-  return null
-}
+  const shapeIdx = sorted.findIndex(e => e.shape === shape)
+  const nextIdx = (shapeIdx + 1) % sorted.length
 
-/**
- * 모든 CAGED 형태에 대한 프렛 위치 정보 반환
- */
-export function getAllCAGEDPositions(
-  rootNote: string,
-  scaleType: ScaleType,
-  maxFrets: number = 22
-): Map<string, CAGEDShape[]> {
-  const positions = new Map<string, CAGEDShape[]>()
+  const low = sorted[shapeIdx].barre + SHAPE_LOW_OFFSET[shape]
+  const highBase = sorted[nextIdx].barre + SHAPE_HIGH_OFFSET[shape]
+  // highBase가 low 이하면 옥타브 wrap (예: D shape low=9, highBase=1 → high=13)
+  const high = highBase <= low ? highBase + 12 : highBase
 
-  for (let stringIndex = 0; stringIndex < 6; stringIndex++) {
-    for (let fret = 1; fret <= maxFrets; fret++) {
-      const key = `${stringIndex}-${fret}`
-      const matchingShapes: CAGEDShape[] = []
-
-      for (const shape of CAGED_SHAPES) {
-        if (isInCAGEDPattern(stringIndex, fret, rootNote, shape, scaleType)) {
-          matchingShapes.push(shape)
-        }
-      }
-
-      if (matchingShapes.length > 0) {
-        positions.set(key, matchingShapes)
-      }
-    }
-  }
-
-  return positions
+  // fret 실제 위치(mod 없이)로 비교 — fret 0과 fret 12는 다른 위치
+  const lowClamped = Math.max(low, 0)
+  return fret >= lowClamped && fret <= high
 }
