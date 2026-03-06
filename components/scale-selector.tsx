@@ -2,12 +2,16 @@
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { ScaleType } from '@/lib/music-utils'
+import { ScaleType, SCALE_LABELS } from '@/lib/music-utils'
 
 interface ScaleSelectorProps {
   scaleType: ScaleType
   onScaleTypeChange: (type: ScaleType) => void
 }
+
+const SCALE_ITEMS = (Object.entries(SCALE_LABELS) as [ScaleType, string][]).map(
+  ([value, label]) => ({ value, label })
+)
 
 export function ScaleSelector({
   scaleType,
@@ -15,50 +19,20 @@ export function ScaleSelector({
 }: ScaleSelectorProps) {
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Button
-        variant={scaleType === 'major' ? 'default' : 'outline'}
-        onClick={() => onScaleTypeChange('major')}
-        className={cn(
-          'transition-all',
-          scaleType === 'major' &&
-            'bg-accent-teal text-background hover:bg-accent-teal/90'
-        )}
-      >
-        Major Scale
-      </Button>
-      <Button
-        variant={scaleType === 'minor' ? 'default' : 'outline'}
-        onClick={() => onScaleTypeChange('minor')}
-        className={cn(
-          'transition-all',
-          scaleType === 'minor' &&
-            'bg-accent-teal text-background hover:bg-accent-teal/90'
-        )}
-      >
-        Minor Scale
-      </Button>
-      <Button
-        variant={scaleType === 'major-pentatonic' ? 'default' : 'outline'}
-        onClick={() => onScaleTypeChange('major-pentatonic')}
-        className={cn(
-          'transition-all',
-          scaleType === 'major-pentatonic' &&
-            'bg-accent-teal text-background hover:bg-accent-teal/90'
-        )}
-      >
-        Major Pentatonic
-      </Button>
-      <Button
-        variant={scaleType === 'minor-pentatonic' ? 'default' : 'outline'}
-        onClick={() => onScaleTypeChange('minor-pentatonic')}
-        className={cn(
-          'transition-all',
-          scaleType === 'minor-pentatonic' &&
-            'bg-accent-teal text-background hover:bg-accent-teal/90'
-        )}
-      >
-        Minor Pentatonic
-      </Button>
+      {SCALE_ITEMS.map(({ value, label }) => (
+        <Button
+          key={value}
+          variant={scaleType === value ? 'default' : 'outline'}
+          onClick={() => onScaleTypeChange(value)}
+          className={cn(
+            'transition-all',
+            scaleType === value &&
+              'bg-accent-teal text-background hover:bg-accent-teal/90'
+          )}
+        >
+          {label}
+        </Button>
+      ))}
     </div>
   )
 }

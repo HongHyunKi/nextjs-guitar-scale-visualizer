@@ -6,65 +6,20 @@ import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
 import { CAGEDSelector } from '@/components/caged-selector'
-import { Input } from '@/components/ui/input'
+import { FretControl } from '@/components/fret-control'
 import { Music } from 'lucide-react'
-import { ScaleType, getScaleNotes } from '@/lib/music-utils'
-import { CAGEDSelection } from '@/lib/caged-utils'
+import { ScaleType, NotationType, SCALE_LABELS, getScaleNotes } from '@/lib/music-utils'
+import { CAGEDSelection, CAGED_SHAPES, CAGED_BG_CLASSES } from '@/lib/caged-utils'
 
 export default function Page() {
-  const [notationType, setNotationType] = useState<
-    'alphabetical' | 'syllabic' | 'intervals'
-  >('alphabetical')
+  const [notationType, setNotationType] = useState<NotationType>('alphabetical')
   const [rootNote, setRootNote] = useState('C')
   const [scaleType, setScaleType] = useState<ScaleType>('major')
   const [frets, setFrets] = useState(17)
   const [cagedEnabled, setCagedEnabled] = useState(false)
-  const [selectedCAGEDShape, setSelectedCAGEDShape] =
-    useState<CAGEDSelection>('all')
-  const [isEditingFrets, setIsEditingFrets] = useState(false)
-  const [fretsInput, setFretsInput] = useState('17')
+  const [selectedCAGEDShape, setSelectedCAGEDShape] = useState<CAGEDSelection>('all')
 
   const scaleNotes = getScaleNotes(rootNote, scaleType)
-
-  const handleFretsInputChange = (value: string) => {
-    setFretsInput(value)
-  }
-
-  const handleFretsInputBlur = () => {
-    const numValue = parseInt(fretsInput)
-    if (!isNaN(numValue)) {
-      const clampedValue = Math.max(5, Math.min(22, numValue))
-      setFrets(clampedValue)
-      setFretsInput(clampedValue.toString())
-    } else {
-      setFretsInput(frets.toString())
-    }
-    setIsEditingFrets(false)
-  }
-
-  const handleFretsInputKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (e.key === 'Enter') {
-      handleFretsInputBlur()
-    } else if (e.key === 'Escape') {
-      setFretsInput(frets.toString())
-      setIsEditingFrets(false)
-    }
-  }
-
-  const getScaleLabel = (type: ScaleType) => {
-    switch (type) {
-      case 'major':
-        return 'Major'
-      case 'minor':
-        return 'Minor'
-      case 'major-pentatonic':
-        return 'Major Pentatonic'
-      case 'minor-pentatonic':
-        return 'Minor Pentatonic'
-    }
-  }
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
@@ -121,7 +76,7 @@ export default function Page() {
 
           <div className="flex-1 min-w-[200px]">
             <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              {rootNote} {getScaleLabel(scaleType)} 구성음
+              {rootNote} {SCALE_LABELS[scaleType]} 구성음
             </label>
 
             <div className="mt-3 p-3 bg-muted/50 rounded-lg">
@@ -143,55 +98,7 @@ export default function Page() {
             <label className="text-sm font-medium text-muted-foreground mb-2 block">
               Frets
             </label>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setFrets(Math.max(5, frets - 1))}
-                disabled={frets <= 5}
-                className="w-10 h-10 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-accent-teal/10 hover:border-accent-teal disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card disabled:hover:border-border transition-colors"
-              >
-                <span className="text-lg font-bold text-muted-foreground">
-                  −
-                </span>
-              </button>
-              <div
-                className="w-10 flex items-center justify-center cursor-text"
-                onClick={() => {
-                  if (!isEditingFrets) {
-                    setIsEditingFrets(true)
-                    setFretsInput(frets.toString())
-                  }
-                }}
-              >
-                {isEditingFrets ? (
-                  <Input
-                    type="number"
-                    value={fretsInput}
-                    onChange={e => handleFretsInputChange(e.target.value)}
-                    onBlur={handleFretsInputBlur}
-                    onKeyDown={handleFretsInputKeyDown}
-                    min={5}
-                    max={22}
-                    autoFocus
-                    className="h-10 text-lg font-semibold text-center"
-                  />
-                ) : (
-                  <div className="w-full h-10 px-4 flex items-center justify-center rounded-lg bg-muted/50 border border-border">
-                    <span className="text-sm font-semibold text-foreground">
-                      {frets}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => setFrets(Math.min(22, frets + 1))}
-                disabled={frets >= 22}
-                className="w-10 h-10 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-accent-teal/10 hover:border-accent-teal disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card disabled:hover:border-border transition-colors"
-              >
-                <span className="text-lg font-bold text-muted-foreground">
-                  +
-                </span>
-              </button>
-            </div>
+            <FretControl value={frets} onChange={setFrets} />
           </div>
 
           {/* CAGED System */}
@@ -232,28 +139,12 @@ export default function Page() {
             <span className="text-sm text-muted-foreground">Root Note</span>
           </div>
           {cagedEnabled ? (
-            <>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-caged-c" />
-                <span className="text-sm text-muted-foreground">C Shape</span>
+            CAGED_SHAPES.map(shape => (
+              <div key={shape} className="flex items-center gap-2">
+                <div className={`w-4 h-4 rounded-full ${CAGED_BG_CLASSES[shape]}`} />
+                <span className="text-sm text-muted-foreground">{shape} Shape</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-caged-a" />
-                <span className="text-sm text-muted-foreground">A Shape</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-caged-g" />
-                <span className="text-sm text-muted-foreground">G Shape</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-caged-e" />
-                <span className="text-sm text-muted-foreground">E Shape</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-caged-d" />
-                <span className="text-sm text-muted-foreground">D Shape</span>
-              </div>
-            </>
+            ))
           ) : (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-accent-teal" />

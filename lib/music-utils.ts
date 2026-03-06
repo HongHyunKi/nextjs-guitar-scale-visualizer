@@ -1,3 +1,6 @@
+// Notation type
+export type NotationType = 'alphabetical' | 'syllabic' | 'intervals'
+
 // Note to solfege mapping (movable do - relative to root)
 const SOLFEGE_MAP: Record<number, string> = {
   0: '도',
@@ -54,14 +57,27 @@ const INTERVAL_MAP: Record<number, string> = {
 // Scale type definition
 export type ScaleType = 'major' | 'minor' | 'major-pentatonic' | 'minor-pentatonic'
 
+// Scale type labels
+export const SCALE_LABELS: Record<ScaleType, string> = {
+  'major': 'Major Scale',
+  'minor': 'Minor Scale',
+  'major-pentatonic': 'Major Pentatonic',
+  'minor-pentatonic': 'Minor Pentatonic',
+}
+
+// All notes in chromatic order (sharp notation) — canonical reference
+export const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+// Flat-to-sharp enharmonic mapping
+const FLAT_TO_SHARP: Record<string, string> = {
+  Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#',
+}
+
 // All notes in chromatic order (sharp notation)
-const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+const NOTES_SHARP = CHROMATIC_NOTES
 
 // All notes in chromatic order (flat notation)
 const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
-
-// Default notes array for backwards compatibility
-const NOTES = NOTES_SHARP
 
 // Major scale intervals (W-W-H-W-W-W-H) - 1, 2, 3, 4, 5, 6, 7
 const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11]
@@ -76,7 +92,8 @@ const MAJOR_PENTATONIC_INTERVALS = [0, 2, 4, 7, 9]
 const MINOR_PENTATONIC_INTERVALS = [0, 3, 5, 7, 10]
 
 export function getNoteIndex(note: string): number {
-  return NOTES.indexOf(note)
+  const sharp = FLAT_TO_SHARP[note] ?? note
+  return CHROMATIC_NOTES.indexOf(sharp)
 }
 
 export function noteToSolfege(note: string, rootNote: string): string {

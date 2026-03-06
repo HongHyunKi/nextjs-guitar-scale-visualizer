@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { CAGEDShape, CAGEDSelection } from '@/lib/caged-utils'
+import { CAGEDShape, CAGEDSelection, CAGED_SHAPES, CAGED_BG_CLASSES } from '@/lib/caged-utils'
 
 interface CAGEDSelectorProps {
   enabled: boolean
@@ -13,20 +13,8 @@ interface CAGEDSelectorProps {
 
 const SHAPES: { value: CAGEDSelection; label: string }[] = [
   { value: 'all', label: 'All' },
-  { value: 'C', label: 'C' },
-  { value: 'A', label: 'A' },
-  { value: 'G', label: 'G' },
-  { value: 'E', label: 'E' },
-  { value: 'D', label: 'D' },
+  ...CAGED_SHAPES.map(s => ({ value: s as CAGEDSelection, label: s })),
 ]
-
-const SHAPE_COLORS: Record<CAGEDShape, string> = {
-  C: 'bg-caged-c',
-  A: 'bg-caged-a',
-  G: 'bg-caged-g',
-  E: 'bg-caged-e',
-  D: 'bg-caged-d',
-}
 
 export function CAGEDSelector({
   enabled,
@@ -61,7 +49,7 @@ export function CAGEDSelector({
           {SHAPES.map(({ value, label }) => {
             const isSelected = selectedShape === value
             const isShape = value !== 'all'
-            const colorClass = isShape ? SHAPE_COLORS[value as CAGEDShape] : ''
+            const colorClass = isShape ? CAGED_BG_CLASSES[value as CAGEDShape] : ''
 
             return (
               <Button

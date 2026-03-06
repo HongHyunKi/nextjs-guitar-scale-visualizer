@@ -2,8 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-
-type NotationType = 'alphabetical' | 'syllabic' | 'intervals'
+import { NotationType } from '@/lib/music-utils'
 
 interface NotationToggleProps {
   type: NotationType

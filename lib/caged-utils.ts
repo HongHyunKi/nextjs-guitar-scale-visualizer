@@ -1,21 +1,17 @@
-import { ScaleType } from './music-utils'
+import { ScaleType, getNoteIndex } from './music-utils'
 
 export type CAGEDShape = 'C' | 'A' | 'G' | 'E' | 'D'
 export type CAGEDSelection = CAGEDShape | 'all'
 
-const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+export const CAGED_SHAPES: CAGEDShape[] = ['C', 'A', 'G', 'E', 'D']
 
-function getNoteIndex(note: string): number {
-  const normalizedNote = note.replace('b', '#')
-  const flatToSharp: Record<string, string> = {
-    Db: 'C#',
-    Eb: 'D#',
-    Gb: 'F#',
-    Ab: 'G#',
-    Bb: 'A#',
-  }
-  const sharpNote = flatToSharp[note] || note
-  return NOTES.indexOf(sharpNote)
+// Full Tailwind bg class names — static strings so Tailwind can detect them
+export const CAGED_BG_CLASSES: Record<CAGEDShape, string> = {
+  C: 'bg-caged-c',
+  A: 'bg-caged-a',
+  G: 'bg-caged-g',
+  E: 'bg-caged-e',
+  D: 'bg-caged-d',
 }
 
 // CAGED 형태별 기준점 (6번현에서의 루트 위치를 기준으로 한 오프셋)
@@ -278,9 +274,7 @@ export function getCAGEDShapeForPosition(
   rootNote: string,
   scaleType: ScaleType
 ): CAGEDShape | null {
-  const shapes: CAGEDShape[] = ['C', 'A', 'G', 'E', 'D']
-
-  for (const shape of shapes) {
+  for (const shape of CAGED_SHAPES) {
     if (isInCAGEDPattern(stringIndex, fret, rootNote, shape, scaleType)) {
       return shape
     }
@@ -298,14 +292,13 @@ export function getAllCAGEDPositions(
   maxFrets: number = 22
 ): Map<string, CAGEDShape[]> {
   const positions = new Map<string, CAGEDShape[]>()
-  const shapes: CAGEDShape[] = ['C', 'A', 'G', 'E', 'D']
 
   for (let stringIndex = 0; stringIndex < 6; stringIndex++) {
     for (let fret = 1; fret <= maxFrets; fret++) {
       const key = `${stringIndex}-${fret}`
       const matchingShapes: CAGEDShape[] = []
 
-      for (const shape of shapes) {
+      for (const shape of CAGED_SHAPES) {
         if (isInCAGEDPattern(stringIndex, fret, rootNote, shape, scaleType)) {
           matchingShapes.push(shape)
         }
@@ -318,13 +311,4 @@ export function getAllCAGEDPositions(
   }
 
   return positions
-}
-
-// CAGED 형태별 색상
-export const CAGED_COLORS: Record<CAGEDShape, string> = {
-  C: 'caged-c',
-  A: 'caged-a',
-  G: 'caged-g',
-  E: 'caged-e',
-  D: 'caged-d',
 }

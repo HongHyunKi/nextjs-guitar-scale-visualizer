@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import * as Tone from 'tone'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -10,18 +10,19 @@ import {
   getNoteFromFret,
   getScaleNotes,
   ScaleType,
+  NotationType,
 } from '@/lib/music-utils'
 import {
   CAGEDShape,
   CAGEDSelection,
-  isInCAGEDPattern,
-  CAGED_COLORS,
+  getAllCAGEDPositions,
+  CAGED_BG_CLASSES,
 } from '@/lib/caged-utils'
 
 interface FretboardProps {
   rootNote: string
   scaleType: ScaleType
-  notationType: 'alphabetical' | 'syllabic' | 'intervals'
+  notationType: NotationType
   frets?: number
   cagedEnabled?: boolean
   selectedCAGEDShape?: CAGEDSelection
@@ -55,7 +56,12 @@ export function Fretboard({
     }
   }, [])
 
-  const scaleNotes = getScaleNotes(rootNote, scaleType)
+  const scaleNotes = useMemo(() => getScaleNotes(rootNote, scaleType), [rootNote, scaleType])
+
+  const cagedMap = useMemo(
+    () => cagedEnabled ? getAllCAGEDPositions(rootNote, scaleType, frets) : new Map<string, CAGEDShape[]>(),
+    [rootNote, scaleType, frets, cagedEnabled]
+  )
 
   const playNote = (note: string) => {
     if (synthRef.current && Tone.context.state === 'running') {
@@ -76,45 +82,12 @@ export function Fretboard({
     return note
   }
 
-  // CAGED 형태 확인 및 색상 반환
-  const getCAGEDInfo = (
-    stringIndex: number,
-    fret: number
-  ): { inPattern: boolean; shape: CAGEDShape | null; colorClass: string } => {
-    if (!cagedEnabled) {
-      return { inPattern: false, shape: null, colorClass: '' }
-    }
-
-    const shapes: CAGEDShape[] = ['C', 'A', 'G', 'E', 'D']
-
-    // 특정 형태만 선택된 경우
-    if (selectedCAGEDShape !== 'all') {
-      const inPattern = isInCAGEDPattern(
-        stringIndex,
-        fret,
-        rootNote,
-        selectedCAGEDShape,
-        scaleType
-      )
-      return {
-        inPattern,
-        shape: inPattern ? selectedCAGEDShape : null,
-        colorClass: inPattern ? `bg-${CAGED_COLORS[selectedCAGEDShape]}` : '',
-      }
-    }
-
-    // 'all' 모드: 모든 형태 확인
-    for (const shape of shapes) {
-      if (isInCAGEDPattern(stringIndex, fret, rootNote, shape, scaleType)) {
-        return {
-          inPattern: true,
-          shape,
-          colorClass: `bg-${CAGED_COLORS[shape]}`,
-        }
-      }
-    }
-
-    return { inPattern: false, shape: null, colorClass: '' }
+  // 해당 위치에서 활성화된 CAGED shape 반환 (없으면 null)
+  const getActiveShape = (stringIndex: number, fret: number): CAGEDShape | null => {
+    const shapes = cagedMap.get(`${stringIndex}-${fret}`)
+    if (!shapes || shapes.length === 0) return null
+    if (selectedCAGEDShape === 'all') return shapes[0]
+    return shapes.includes(selectedCAGEDShape as CAGEDShape) ? selectedCAGEDShape as CAGEDShape : null
   }
 
   // 노트 색상 클래스 결정
@@ -128,9 +101,9 @@ export function Fretboard({
     }
 
     if (cagedEnabled) {
-      const { inPattern, colorClass } = getCAGEDInfo(stringIndex, fret)
-      if (inPattern && colorClass) {
-        return `${colorClass} text-background shadow-md`
+      const shape = getActiveShape(stringIndex, fret)
+      if (shape) {
+        return `${CAGED_BG_CLASSES[shape]} text-background shadow-md`
       }
     }
 
@@ -144,12 +117,7 @@ export function Fretboard({
     fret: number
   ): boolean => {
     if (!inScale) return false
-
-    if (cagedEnabled) {
-      const { inPattern } = getCAGEDInfo(stringIndex, fret)
-      return inPattern
-    }
-
+    if (cagedEnabled) return getActiveShape(stringIndex, fret) !== null
     return true
   }
 
