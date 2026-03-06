@@ -74,7 +74,7 @@ export function getCAGEDShapeForFret(fret: number, rootNote: string): CAGEDShape
 // Shape별 barre로부터의 low/high 오프셋
 // C 메이저 기준 검증: C[1,3] A[2,6] G[4,8] E[7,10] D[9,13]
 const SHAPE_LOW_OFFSET: Record<CAGEDShape, number> = {
-  C: 1,   // open C 코드는 1프렛부터 시작
+  C: 0,   // low = max(barre, 1) 로 별도 처리 — barre 자체가 low
   A: -1,
   G: -1,
   E: -1,
@@ -102,12 +102,19 @@ export function isInCAGEDShapeRange(fret: number, rootNote: string, shape: CAGED
   const shapeIdx = sorted.findIndex(e => e.shape === shape)
   const nextIdx = (shapeIdx + 1) % sorted.length
 
-  const low = sorted[shapeIdx].barre + SHAPE_LOW_OFFSET[shape]
+  // C 이외의 shape이 barre=0이면 해당 키의 개방 코드 위치를 의미하지만,
+  // CAGED 시각화에서는 다른 shape들(최대 ~fret10) 이후인 12번 위치로 표시
+  // 예) D major D shape: barre=0 → 12로 처리 → range [11, 15]
+  const rawBarre = sorted[shapeIdx].barre
+  const shapeBarre = shape !== 'C' && rawBarre === 0 ? 12 : rawBarre
+
+  const low = shapeBarre + SHAPE_LOW_OFFSET[shape]
   const highBase = sorted[nextIdx].barre + SHAPE_HIGH_OFFSET[shape]
   // highBase가 low 이하면 옥타브 wrap (예: D shape low=9, highBase=1 → high=13)
   const high = highBase <= low ? highBase + 12 : highBase
 
   // fret 실제 위치(mod 없이)로 비교 — fret 0과 fret 12는 다른 위치
-  const lowClamped = Math.max(low, 0)
+  // C shape은 open 포지션(barre=0)일 때 개방현 제외 → min 1
+  const lowClamped = shape === 'C' ? Math.max(low, 1) : Math.max(low, 0)
   return fret >= lowClamped && fret <= high
 }
