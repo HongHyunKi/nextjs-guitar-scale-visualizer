@@ -8,7 +8,9 @@ import {
   noteToFixedSolfege,
   noteToInterval,
   getNoteFromFret,
+  getNoteIndex,
   getScaleNotes,
+  isScaleFlat,
   ScaleType,
   NotationType,
 } from '@/lib/music-utils'
@@ -61,7 +63,7 @@ export function Fretboard({
   )
 
   const allFrets = useMemo(
-    () => Array.from({ length: frets }, (_, i) => i + 1),
+    () => Array.from({ length: frets + 1 }, (_, i) => i),  // [0, 1, 2, ..., frets]
     [frets]
   )
 
@@ -120,10 +122,10 @@ export function Fretboard({
               </div>
 
               {allFrets.map(fret => {
-                const useFlat = scaleType.includes('minor')
+                const useFlat = isScaleFlat(rootNote, scaleType)
                 const note = getNoteFromFret(openString, fret, useFlat)
-                const inScale = scaleNotes.includes(note)
-                const isRoot = note === rootNote
+                const inScale = scaleNotes.some(n => getNoteIndex(n) === getNoteIndex(note))
+                const isRoot = getNoteIndex(note) === getNoteIndex(rootNote)
                 const active = isActiveNote(fret)
 
                 return (

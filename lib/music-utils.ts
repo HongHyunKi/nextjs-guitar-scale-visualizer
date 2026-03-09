@@ -96,6 +96,25 @@ export function getNoteIndex(note: string): number {
   return CHROMATIC_NOTES.indexOf(sharp)
 }
 
+// Roots that conventionally use flat notation in major context
+const MAJOR_FLAT_ROOTS = new Set(['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'])
+
+// Roots that conventionally use flat notation in minor context
+const MINOR_FLAT_ROOTS = new Set(['D', 'G', 'C', 'F', 'Bb', 'Eb', 'Ab'])
+
+function shouldUseFlat(rootNote: string, isMinor: boolean): boolean {
+  if (rootNote.includes('b')) return true   // flat root → flat spelling
+  if (rootNote.includes('#')) return false  // sharp root → sharp spelling
+  return isMinor ? MINOR_FLAT_ROOTS.has(rootNote) : MAJOR_FLAT_ROOTS.has(rootNote)
+}
+
+// Exported helper: determines flat/sharp notation for a root+scale combination.
+// Use this in rendering code to stay consistent with getScaleNotes.
+export function isScaleFlat(rootNote: string, scaleType: ScaleType): boolean {
+  const isMinor = scaleType === 'minor' || scaleType === 'minor-pentatonic'
+  return shouldUseFlat(rootNote, isMinor)
+}
+
 export function noteToSolfege(note: string, rootNote: string): string {
   const noteIndex = getNoteIndex(note)
   const rootIndex = getNoteIndex(rootNote)
@@ -121,34 +140,19 @@ export function getScaleNotes(
   const rootIndex = getNoteIndex(rootNote)
 
   let intervals: number[]
-  let notesArray: string[]
+  let isMinor: boolean
 
   switch (scaleType) {
-    case 'major':
-      intervals = MAJOR_INTERVALS
-      notesArray = NOTES_SHARP
-      break
-    case 'minor':
-      intervals = MINOR_INTERVALS
-      notesArray = NOTES_FLAT
-      break
-    case 'major-pentatonic':
-      intervals = MAJOR_PENTATONIC_INTERVALS
-      notesArray = NOTES_SHARP
-      break
-    case 'minor-pentatonic':
-      intervals = MINOR_PENTATONIC_INTERVALS
-      notesArray = NOTES_FLAT
-      break
-    default:
-      intervals = MAJOR_INTERVALS
-      notesArray = NOTES_SHARP
+    case 'major':            intervals = MAJOR_INTERVALS;            isMinor = false; break
+    case 'minor':            intervals = MINOR_INTERVALS;            isMinor = true;  break
+    case 'major-pentatonic': intervals = MAJOR_PENTATONIC_INTERVALS; isMinor = false; break
+    case 'minor-pentatonic': intervals = MINOR_PENTATONIC_INTERVALS; isMinor = true;  break
+    default:                 intervals = MAJOR_INTERVALS;            isMinor = false;
   }
 
-  return intervals.map(interval => {
-    const noteIndex = (rootIndex + interval) % 12
-    return notesArray[noteIndex]
-  })
+  const notesArray = shouldUseFlat(rootNote, isMinor) ? NOTES_FLAT : NOTES_SHARP
+
+  return intervals.map(interval => notesArray[(rootIndex + interval) % 12])
 }
 
 export function getNoteFromFret(
