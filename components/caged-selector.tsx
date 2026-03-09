@@ -30,7 +30,8 @@ export function CAGEDSelector({
   return (
     <div className="flex items-center flex-wrap gap-1">
       {SHAPES.map(({ value, label }) => {
-        const isSelected = enabled && selectedShape === value
+        const isSelected =
+          (!enabled && value === 'all') || (enabled && selectedShape === value)
 
         return (
           <Button
