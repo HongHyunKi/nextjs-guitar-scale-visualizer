@@ -16,8 +16,6 @@ import {
 } from '@/lib/music-utils'
 import {
   CAGEDSelection,
-  CAGED_SHAPES,
-  CAGED_BG_CLASSES,
 } from '@/lib/caged-utils'
 
 export default function Page() {
@@ -155,32 +153,6 @@ export default function Page() {
           <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-accent-teal/60 via-accent-teal/80 to-accent-teal/60 pointer-events-none opacity-70 xl:opacity-0 rounded-r-xl shadow-lg shadow-accent-teal/50"></div>
         </div>
 
-        {/* Legend */}
-        <div className="flex flex-wrap items-center gap-6 p-4 bg-card/50 border border-border rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-accent-orange" />
-            <span className="text-sm text-muted-foreground">Root Note</span>
-          </div>
-          {cagedEnabled ? (
-            CAGED_SHAPES.map(shape => (
-              <div key={shape} className="flex items-center gap-2">
-                <div
-                  className={`w-4 h-4 rounded-full ${CAGED_BG_CLASSES[shape]}`}
-                />
-                <span className="text-sm text-muted-foreground">
-                  {shape} Shape
-                </span>
-              </div>
-            ))
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-accent-teal" />
-              <span className="text-sm text-muted-foreground">
-                Scale Degree
-              </span>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )

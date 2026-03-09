@@ -5,15 +5,6 @@ export type CAGEDSelection = CAGEDShape | 'all'
 
 export const CAGED_SHAPES: CAGEDShape[] = ['C', 'A', 'G', 'E', 'D']
 
-// Full Tailwind bg class names — static strings so Tailwind can detect them
-export const CAGED_BG_CLASSES: Record<CAGEDShape, string> = {
-  C: 'bg-caged-c',
-  A: 'bg-caged-a',
-  G: 'bg-caged-g',
-  E: 'bg-caged-e',
-  D: 'bg-caged-d',
-}
-
 /**
  * 각 CAGED 형태의 오픈 코드 기준 음 인덱스
  *
