@@ -10,7 +10,12 @@ interface FretControlProps {
   max?: number
 }
 
-export function FretControl({ value, onChange, min = 5, max = 22 }: FretControlProps) {
+export function FretControl({
+  value,
+  onChange,
+  min = 5,
+  max = 24,
+}: FretControlProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [inputValue, setInputValue] = useState(value.toString())
 
@@ -67,7 +72,9 @@ export function FretControl({ value, onChange, min = 5, max = 22 }: FretControlP
           />
         ) : (
           <div className="w-full h-10 px-4 flex items-center justify-center rounded-lg bg-muted/50 border border-border">
-            <span className="text-sm font-semibold text-foreground">{value}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {value}
+            </span>
           </div>
         )}
       </div>

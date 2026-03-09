@@ -33,7 +33,7 @@ export function Fretboard({
   rootNote,
   scaleType,
   notationType,
-  frets = 17,
+  frets = 24,
   cagedEnabled = false,
   selectedCAGEDShape = 'all',
 }: FretboardProps) {
@@ -214,7 +214,7 @@ export function Fretboard({
               key={`marker-${fret}`}
               className="flex-1 min-w-[52px] xl:min-w-[60px] flex items-center justify-center gap-1 h-5"
             >
-              {fret === 12 ? (
+              {[12, 24].includes(fret) ? (
                 <>
                   <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
                   <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />

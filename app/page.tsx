@@ -8,16 +8,26 @@ import { ScaleSelector } from '@/components/scale-selector'
 import { CAGEDSelector } from '@/components/caged-selector'
 import { FretControl } from '@/components/fret-control'
 import { Music } from 'lucide-react'
-import { ScaleType, NotationType, SCALE_LABELS, getScaleNotes } from '@/lib/music-utils'
-import { CAGEDSelection, CAGED_SHAPES, CAGED_BG_CLASSES } from '@/lib/caged-utils'
+import {
+  ScaleType,
+  NotationType,
+  SCALE_LABELS,
+  getScaleNotes,
+} from '@/lib/music-utils'
+import {
+  CAGEDSelection,
+  CAGED_SHAPES,
+  CAGED_BG_CLASSES,
+} from '@/lib/caged-utils'
 
 export default function Page() {
   const [notationType, setNotationType] = useState<NotationType>('alphabetical')
   const [rootNote, setRootNote] = useState('C')
   const [scaleType, setScaleType] = useState<ScaleType>('major')
-  const [frets, setFrets] = useState(17)
+  const [frets, setFrets] = useState(15)
   const [cagedEnabled, setCagedEnabled] = useState(false)
-  const [selectedCAGEDShape, setSelectedCAGEDShape] = useState<CAGEDSelection>('all')
+  const [selectedCAGEDShape, setSelectedCAGEDShape] =
+    useState<CAGEDSelection>('all')
 
   const scaleNotes = getScaleNotes(rootNote, scaleType)
 
@@ -141,14 +151,20 @@ export default function Page() {
           {cagedEnabled ? (
             CAGED_SHAPES.map(shape => (
               <div key={shape} className="flex items-center gap-2">
-                <div className={`w-4 h-4 rounded-full ${CAGED_BG_CLASSES[shape]}`} />
-                <span className="text-sm text-muted-foreground">{shape} Shape</span>
+                <div
+                  className={`w-4 h-4 rounded-full ${CAGED_BG_CLASSES[shape]}`}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {shape} Shape
+                </span>
               </div>
             ))
           ) : (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-accent-teal" />
-              <span className="text-sm text-muted-foreground">Scale Degree</span>
+              <span className="text-sm text-muted-foreground">
+                Scale Degree
+              </span>
             </div>
           )}
         </div>
