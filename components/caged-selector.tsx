@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { CAGEDShape, CAGEDSelection, CAGED_SHAPES, CAGED_BG_CLASSES } from '@/lib/caged-utils'
+import { CAGED_SHAPES, CAGEDSelection } from '@/lib/caged-utils'
 
 interface CAGEDSelectorProps {
   enabled: boolean
@@ -31,8 +31,6 @@ export function CAGEDSelector({
     <div className="flex items-center flex-wrap gap-1">
       {SHAPES.map(({ value, label }) => {
         const isSelected = enabled && selectedShape === value
-        const isShape = value !== 'all'
-        const colorClass = isShape ? CAGED_BG_CLASSES[value as CAGEDShape] : ''
 
         return (
           <Button
@@ -42,10 +40,9 @@ export function CAGEDSelector({
             onClick={() => handleClick(value as CAGEDSelection)}
             className={cn(
               'min-w-[48px] transition-all',
-              isSelected &&
-                (value === 'all'
-                  ? 'bg-accent-teal text-background hover:bg-accent-teal/90'
-                  : `${colorClass} text-background hover:opacity-90`)
+              isSelected
+                ? 'bg-accent-teal text-background hover:bg-accent-teal/90'
+                : `hover:opacity-90`
             )}
           >
             {label}
