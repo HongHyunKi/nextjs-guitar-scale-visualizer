@@ -60,9 +60,8 @@ export function Fretboard({
     [rootNote, scaleType]
   )
 
-  // 0 = 개방현, 1~frets = 일반 프렛
   const allFrets = useMemo(
-    () => [0, ...Array.from({ length: frets }, (_, i) => i + 1)],
+    () => Array.from({ length: frets }, (_, i) => i + 1),
     [frets]
   )
 
@@ -153,13 +152,11 @@ export function Fretboard({
                       getFretBorderClass(fret)
                     )}
                   >
-                    {/* 현(String) 가로선 — 개방현 영역에는 그리지 않음 */}
-                    {fret > 0 && (
-                      <div
-                        className="absolute top-1/2 left-0 right-0 bg-zinc-500/50 pointer-events-none"
-                        style={{ height: `${1.5 + stringIndex * 0.3}px` }}
-                      />
-                    )}
+                    {/* 현(String) 가로선 */}
+                    <div
+                      className="absolute top-1/2 left-0 right-0 bg-zinc-500/50 pointer-events-none"
+                      style={{ height: `${1.5 + stringIndex * 0.3}px` }}
+                    />
 
                     {/* 활성 shape 노트: 완전 표시 */}
                     {inScale && active && (
