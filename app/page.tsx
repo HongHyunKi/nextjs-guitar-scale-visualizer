@@ -5,61 +5,31 @@ import { Fretboard } from '@/components/fretboard'
 import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
-import { Input } from '@/components/ui/input'
+import { CAGEDSelector } from '@/components/caged-selector'
+import { FretControl } from '@/components/fret-control'
 import { Music } from 'lucide-react'
-import { ScaleType, getScaleNotes } from '@/lib/music-utils'
+import {
+  ScaleType,
+  NotationType,
+  SCALE_LABELS,
+  getScaleNotes,
+} from '@/lib/music-utils'
+import {
+  CAGEDSelection,
+  CAGED_SHAPES,
+  CAGED_BG_CLASSES,
+} from '@/lib/caged-utils'
 
 export default function Page() {
-  const [notationType, setNotationType] = useState<
-    'alphabetical' | 'syllabic' | 'intervals'
-  >('alphabetical')
+  const [notationType, setNotationType] = useState<NotationType>('alphabetical')
   const [rootNote, setRootNote] = useState('C')
   const [scaleType, setScaleType] = useState<ScaleType>('major')
-  const [frets, setFrets] = useState(17)
-  const [isEditingFrets, setIsEditingFrets] = useState(false)
-  const [fretsInput, setFretsInput] = useState('17')
+  const [frets, setFrets] = useState(15)
+  const [cagedEnabled, setCagedEnabled] = useState(false)
+  const [selectedCAGEDShape, setSelectedCAGEDShape] =
+    useState<CAGEDSelection>('all')
 
   const scaleNotes = getScaleNotes(rootNote, scaleType)
-
-  const handleFretsInputChange = (value: string) => {
-    setFretsInput(value)
-  }
-
-  const handleFretsInputBlur = () => {
-    const numValue = parseInt(fretsInput)
-    if (!isNaN(numValue)) {
-      const clampedValue = Math.max(5, Math.min(22, numValue))
-      setFrets(clampedValue)
-      setFretsInput(clampedValue.toString())
-    } else {
-      setFretsInput(frets.toString())
-    }
-    setIsEditingFrets(false)
-  }
-
-  const handleFretsInputKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (e.key === 'Enter') {
-      handleFretsInputBlur()
-    } else if (e.key === 'Escape') {
-      setFretsInput(frets.toString())
-      setIsEditingFrets(false)
-    }
-  }
-
-  const getScaleLabel = (type: ScaleType) => {
-    switch (type) {
-      case 'major':
-        return 'Major'
-      case 'minor':
-        return 'Minor'
-      case 'major-pentatonic':
-        return 'Major Pentatonic'
-      case 'minor-pentatonic':
-        return 'Minor Pentatonic'
-    }
-  }
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
@@ -82,110 +52,88 @@ export default function Page() {
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col flex-wrap gap-4  p-6 bg-card border border-border rounded-xl">
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Root Note
-            </label>
-            <RootNoteSelector
-              rootNote={rootNote}
-              onRootNoteChange={setRootNote}
-              notationType={notationType}
-            />
-          </div>
+        <div className="p-6 bg-card border border-border rounded-xl space-y-6">
+          {/* Scale 섹션 */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Scale
+            </p>
 
-          <div>
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Notation
-            </label>
-            <NotationToggle
-              type={notationType}
-              onTypeChange={setNotationType}
-            />
-          </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Root Note
+              </label>
+              <RootNoteSelector
+                rootNote={rootNote}
+                onRootNoteChange={setRootNote}
+                notationType={notationType}
+              />
+            </div>
 
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Scale Type
-            </label>
-            <ScaleSelector
-              scaleType={scaleType}
-              onScaleTypeChange={setScaleType}
-            />
-          </div>
+            <div className="grid md:grid-cols-2 gap-4 items-start">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Scale Type
+                </label>
+                <ScaleSelector
+                  scaleType={scaleType}
+                  onScaleTypeChange={setScaleType}
+                />
+              </div>
 
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              {rootNote} {getScaleLabel(scaleType)} 구성음
-            </label>
-
-            <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-              <div className="flex flex-wrap gap-2">
-                {scaleNotes.map((note, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col items-center gap-1 px-2 py-1 bg-background rounded"
-                  >
-                    <span className="text-sm font-medium">{note}</span>
-                  </div>
-                ))}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  {rootNote} {SCALE_LABELS[scaleType]} 구성음
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {scaleNotes.map((note, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 text-sm font-medium rounded border bg-accent-teal/15 text-accent-teal border-accent-teal/30"
+                    >
+                      {note}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* 프렛 수 조절 */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Frets
-            </label>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setFrets(Math.max(5, frets - 1))}
-                disabled={frets <= 5}
-                className="w-10 h-10 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-accent-teal/10 hover:border-accent-teal disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card disabled:hover:border-border transition-colors"
-              >
-                <span className="text-lg font-bold text-muted-foreground">
-                  −
-                </span>
-              </button>
-              <div
-                className="w-10 flex items-center justify-center cursor-text"
-                onClick={() => {
-                  if (!isEditingFrets) {
-                    setIsEditingFrets(true)
-                    setFretsInput(frets.toString())
-                  }
-                }}
-              >
-                {isEditingFrets ? (
-                  <Input
-                    type="number"
-                    value={fretsInput}
-                    onChange={e => handleFretsInputChange(e.target.value)}
-                    onBlur={handleFretsInputBlur}
-                    onKeyDown={handleFretsInputKeyDown}
-                    min={5}
-                    max={22}
-                    autoFocus
-                    className="h-10 text-lg font-semibold text-center"
-                  />
-                ) : (
-                  <div className="w-full h-10 px-4 flex items-center justify-center rounded-lg bg-muted/50 border border-border">
-                    <span className="text-sm font-semibold text-foreground">
-                      {frets}
-                    </span>
-                  </div>
-                )}
+          {/* View 섹션 */}
+          <div className="space-y-4 border-t border-border pt-6">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              View
+            </p>
+
+            <div className="flex flex-wrap gap-6">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Notation
+                </label>
+                <NotationToggle
+                  type={notationType}
+                  onTypeChange={setNotationType}
+                />
               </div>
-              <button
-                onClick={() => setFrets(Math.min(22, frets + 1))}
-                disabled={frets >= 22}
-                className="w-10 h-10 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-accent-teal/10 hover:border-accent-teal disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card disabled:hover:border-border transition-colors"
-              >
-                <span className="text-lg font-bold text-muted-foreground">
-                  +
-                </span>
-              </button>
+
+              <div className="w-full max-w-xs">
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Frets
+                </label>
+                <FretControl value={frets} onChange={setFrets} />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                CAGED System
+              </label>
+              <CAGEDSelector
+                enabled={cagedEnabled}
+                onEnabledChange={setCagedEnabled}
+                selectedShape={selectedCAGEDShape}
+                onShapeChange={setSelectedCAGEDShape}
+              />
             </div>
           </div>
         </div>
@@ -198,6 +146,8 @@ export default function Page() {
               scaleType={scaleType}
               notationType={notationType}
               frets={frets}
+              cagedEnabled={cagedEnabled}
+              selectedCAGEDShape={selectedCAGEDShape}
             />
           </div>
 
@@ -206,15 +156,30 @@ export default function Page() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-6 p-4 bg-card/50 border border-border rounded-lg">
+        <div className="flex flex-wrap items-center gap-6 p-4 bg-card/50 border border-border rounded-lg">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-accent-orange" />
             <span className="text-sm text-muted-foreground">Root Note</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-accent-teal" />
-            <span className="text-sm text-muted-foreground">Scale Degree</span>
-          </div>
+          {cagedEnabled ? (
+            CAGED_SHAPES.map(shape => (
+              <div key={shape} className="flex items-center gap-2">
+                <div
+                  className={`w-4 h-4 rounded-full ${CAGED_BG_CLASSES[shape]}`}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {shape} Shape
+                </span>
+              </div>
+            ))
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-accent-teal" />
+              <span className="text-sm text-muted-foreground">
+                Scale Degree
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

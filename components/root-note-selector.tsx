@@ -2,15 +2,13 @@
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { noteToFixedSolfege } from '@/lib/music-utils'
+import { noteToFixedSolfege, CHROMATIC_NOTES, NotationType } from '@/lib/music-utils'
 
 interface RootNoteSelectorProps {
   rootNote: string
   onRootNoteChange: (note: string) => void
-  notationType: 'alphabetical' | 'syllabic' | 'intervals'
+  notationType: NotationType
 }
-
-const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 export function RootNoteSelector({
   rootNote,
@@ -26,7 +24,7 @@ export function RootNoteSelector({
 
   return (
     <div className="flex flex-wrap gap-2">
-      {NOTES.map(note => (
+      {CHROMATIC_NOTES.map(note => (
         <Button
           key={note}
           variant={rootNote === note ? 'default' : 'outline'}
