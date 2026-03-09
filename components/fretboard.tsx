@@ -107,24 +107,6 @@ export function Fretboard({
   return (
     <div className="w-full overflow-x-auto pb-6 custom-scrollbar">
       <div className="min-w-[800px] flex flex-col">
-        {/* 1. 상단 마커 영역 */}
-        <div className="flex mb-2">
-          <div className="w-8 min-w-4" />
-          {allFrets.map(fret => (
-            <div
-              key={`marker-${fret}`}
-              className={cn(
-                'flex-1 min-w-[52px] xl:min-w-[60px] flex flex-col items-center justify-end h-6',
-                getFretBorderClass(fret)
-              )}
-            >
-              {[3, 5, 7, 9, 15].includes(fret) && (
-                <div className="w-2 h-2 rounded-full bg-muted-foreground/20" />
-              )}
-            </div>
-          ))}
-        </div>
-
         {/* 2. 지판 본체 */}
         <div className="flex flex-col">
           {STRINGS.map((openString, stringIndex) => (
@@ -220,6 +202,26 @@ export function Fretboard({
                   {fret}
                 </span>
               )}
+            </div>
+          ))}
+        </div>
+
+        {/* 4. 하단 마커 영역 */}
+        <div className="flex mt-2">
+          <div className="w-8 min-w-4" />
+          {allFrets.map(fret => (
+            <div
+              key={`marker-${fret}`}
+              className="flex-1 min-w-[52px] xl:min-w-[60px] flex items-center justify-center gap-1 h-5"
+            >
+              {fret === 12 ? (
+                <>
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                </>
+              ) : [3, 5, 7, 9, 15, 17, 19, 21].includes(fret) ? (
+                <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+              ) : null}
             </div>
           ))}
         </div>
