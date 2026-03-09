@@ -52,76 +52,89 @@ export default function Page() {
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col flex-wrap gap-4  p-6 bg-card border border-border rounded-xl">
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Root Note
-            </label>
-            <RootNoteSelector
-              rootNote={rootNote}
-              onRootNoteChange={setRootNote}
-              notationType={notationType}
-            />
-          </div>
+        <div className="p-6 bg-card border border-border rounded-xl space-y-6">
+          {/* Scale 섹션 */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Scale
+            </p>
 
-          <div>
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Notation
-            </label>
-            <NotationToggle
-              type={notationType}
-              onTypeChange={setNotationType}
-            />
-          </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                Root Note
+              </label>
+              <RootNoteSelector
+                rootNote={rootNote}
+                onRootNoteChange={setRootNote}
+                notationType={notationType}
+              />
+            </div>
 
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Scale Type
-            </label>
-            <ScaleSelector
-              scaleType={scaleType}
-              onScaleTypeChange={setScaleType}
-            />
-          </div>
+            <div className="grid md:grid-cols-2 gap-4 items-start">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Scale Type
+                </label>
+                <ScaleSelector
+                  scaleType={scaleType}
+                  onScaleTypeChange={setScaleType}
+                />
+              </div>
 
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              {rootNote} {SCALE_LABELS[scaleType]} 구성음
-            </label>
-
-            <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-              <div className="flex flex-wrap gap-2">
-                {scaleNotes.map((note, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col items-center gap-1 px-2 py-1 bg-background rounded"
-                  >
-                    <span className="text-sm font-medium">{note}</span>
-                  </div>
-                ))}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  {rootNote} {SCALE_LABELS[scaleType]} 구성음
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {scaleNotes.map((note, index) => (
+                    <span
+                      key={index}
+                      className="px-2 py-1 text-sm font-medium rounded border bg-accent-teal/15 text-accent-teal border-accent-teal/30"
+                    >
+                      {note}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* 프렛 수 조절 */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Frets
-            </label>
-            <FretControl value={frets} onChange={setFrets} />
-          </div>
+          {/* View 섹션 */}
+          <div className="space-y-4 border-t border-border pt-6">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              View
+            </p>
 
-          {/* CAGED System */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              CAGED System
-            </label>
-            <CAGEDSelector
-              enabled={cagedEnabled}
-              onEnabledChange={setCagedEnabled}
-              selectedShape={selectedCAGEDShape}
-              onShapeChange={setSelectedCAGEDShape}
-            />
+            <div className="flex flex-wrap gap-6">
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Notation
+                </label>
+                <NotationToggle
+                  type={notationType}
+                  onTypeChange={setNotationType}
+                />
+              </div>
+
+              <div className="w-full max-w-xs">
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Frets
+                </label>
+                <FretControl value={frets} onChange={setFrets} />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                CAGED System
+              </label>
+              <CAGEDSelector
+                enabled={cagedEnabled}
+                onEnabledChange={setCagedEnabled}
+                selectedShape={selectedCAGEDShape}
+                onShapeChange={setSelectedCAGEDShape}
+              />
+            </div>
           </div>
         </div>
 

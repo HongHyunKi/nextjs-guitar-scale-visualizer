@@ -22,55 +22,36 @@ export function CAGEDSelector({
   selectedShape,
   onShapeChange,
 }: CAGEDSelectorProps) {
+  const handleClick = (value: CAGEDSelection) => {
+    onEnabledChange(true)
+    onShapeChange(value)
+  }
+
   return (
-    <div className="space-y-3">
-      {/* CAGED 토글 */}
-      <div className="flex items-center gap-3">
-        <Button
-          variant={enabled ? 'default' : 'outline'}
-          onClick={() => onEnabledChange(!enabled)}
-          className={cn(
-            'transition-all',
-            enabled && 'bg-accent-teal text-background hover:bg-accent-teal/90'
-          )}
-        >
-          CAGED System
-        </Button>
-        {enabled && (
-          <span className="text-sm text-muted-foreground">
-            {selectedShape === 'all' ? '모든 형태' : `${selectedShape} Shape`}
-          </span>
-        )}
-      </div>
+    <div className="flex items-center flex-wrap gap-1">
+      {SHAPES.map(({ value, label }) => {
+        const isSelected = enabled && selectedShape === value
+        const isShape = value !== 'all'
+        const colorClass = isShape ? CAGED_BG_CLASSES[value as CAGEDShape] : ''
 
-      {/* CAGED 형태 선택 */}
-      {enabled && (
-        <div className="flex flex-wrap gap-2">
-          {SHAPES.map(({ value, label }) => {
-            const isSelected = selectedShape === value
-            const isShape = value !== 'all'
-            const colorClass = isShape ? CAGED_BG_CLASSES[value as CAGEDShape] : ''
-
-            return (
-              <Button
-                key={value}
-                variant={isSelected ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => onShapeChange(value)}
-                className={cn(
-                  'min-w-[48px] transition-all',
-                  isSelected &&
-                    (value === 'all'
-                      ? 'bg-accent-teal text-background hover:bg-accent-teal/90'
-                      : `${colorClass} text-background hover:opacity-90`)
-                )}
-              >
-                {label}
-              </Button>
-            )
-          })}
-        </div>
-      )}
+        return (
+          <Button
+            key={value}
+            variant={isSelected ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => handleClick(value as CAGEDSelection)}
+            className={cn(
+              'min-w-[48px] transition-all',
+              isSelected &&
+                (value === 'all'
+                  ? 'bg-accent-teal text-background hover:bg-accent-teal/90'
+                  : `${colorClass} text-background hover:opacity-90`)
+            )}
+          >
+            {label}
+          </Button>
+        )
+      })}
     </div>
   )
 }
