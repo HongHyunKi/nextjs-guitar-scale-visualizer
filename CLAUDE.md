@@ -151,8 +151,11 @@ When adding modes, verify the flat-root sets match conventional key signatures f
 ### Run Tests
 
 ```bash
-npx tsx lib/scale-tests.ts
+pnpm test
 ```
+
+Tests live in `test/music-utils.test.ts` and run via Jest + ts-jest.
+The legacy `lib/scale-tests.ts` script is kept for reference but `pnpm test` is the canonical command.
 
 ### Why the Current Tests Are Insufficient
 
