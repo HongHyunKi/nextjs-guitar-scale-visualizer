@@ -25,7 +25,7 @@ const SHAPE_BASE_NOTE: Record<CAGEDShape, number> = {
   C: 0, // C
 }
 
-function getBarreFret(rootIndex: number, shape: CAGEDShape): number {
+export function getBarreFret(rootIndex: number, shape: CAGEDShape): number {
   return (rootIndex - SHAPE_BASE_NOTE[shape] + 12) % 12
 }
 
@@ -63,28 +63,30 @@ export function getCAGEDShapeForFret(fret: number, rootNote: string): CAGEDShape
 }
 
 // Shape별 barre로부터의 low/high 오프셋
-// C 메이저 기준 검증: C[1,3] A[2,6] G[4,8] E[7,10] D[9,13]
+// Am 기준: A[0,3] G[2,5] E[5,8] D[7,10] C[9,12]
+// C 메이저 기준: C[0,3] A[3,6] G[5,8] E[8,11] D[10,13]
 const SHAPE_LOW_OFFSET: Record<CAGEDShape, number> = {
-  C: 0,   // low = max(barre, 1) 로 별도 처리 — barre 자체가 low
-  A: -1,
-  G: -1,
-  E: -1,
-  D: -1,
+  C: 0,
+  A: 0,
+  G: 0,
+  E: 0,
+  D: 0,
 }
 
 const SHAPE_HIGH_OFFSET: Record<CAGEDShape, number> = {
-  C: 0,
-  A: 1,   // A shape는 next barre +1까지 포함
-  G: 0,
-  E: 0,
-  D: 1,   // D shape도 next barre +1까지 포함 (wrap 포함)
+  C: 0,   // high = next_barre
+  A: +1,  // high = next_barre + 1
+  G: 0,   // high = next_barre
+  E: +1,  // high = next_barre + 1
+  D: +1,  // high = next_barre + 1
 }
 
 /**
  * 단일 Shape 선택 시 프렛이 해당 Shape 범위에 속하는지 확인
  *
- * C 메이저 기준: C[1,3] A[2,6] G[4,8] E[7,10] D[9,13]
- * 인접 shape 간 2프렛 겹침 (CAGED shared notes — 정상)
+ * Am 기준: A[0,3] G[2,5] E[5,8] D[7,10] C[9,12]
+ * C 메이저 기준: C[0,3] A[3,6] G[5,8] E[8,11] D[10,13]
+ * 인접 shape 간 겹침 (CAGED shared notes — 정상)
  */
 export function isInCAGEDShapeRange(fret: number, rootNote: string, shape: CAGEDShape): boolean {
   const rootIndex = getNoteIndex(rootNote)
@@ -93,19 +95,12 @@ export function isInCAGEDShapeRange(fret: number, rootNote: string, shape: CAGED
   const shapeIdx = sorted.findIndex(e => e.shape === shape)
   const nextIdx = (shapeIdx + 1) % sorted.length
 
-  // C 이외의 shape이 barre=0이면 해당 키의 개방 코드 위치를 의미하지만,
-  // CAGED 시각화에서는 다른 shape들(최대 ~fret10) 이후인 12번 위치로 표시
-  // 예) D major D shape: barre=0 → 12로 처리 → range [11, 15]
-  const rawBarre = sorted[shapeIdx].barre
-  const shapeBarre = shape !== 'C' && rawBarre === 0 ? 12 : rawBarre
+  const shapeBarre = sorted[shapeIdx].barre
 
   const low = shapeBarre + SHAPE_LOW_OFFSET[shape]
   const highBase = sorted[nextIdx].barre + SHAPE_HIGH_OFFSET[shape]
-  // highBase가 low 이하면 옥타브 wrap (예: D shape low=9, highBase=1 → high=13)
+  // highBase가 low 이하면 옥타브 wrap (예: C shape의 next가 wrap-around될 때)
   const high = highBase <= low ? highBase + 12 : highBase
 
-  // fret 실제 위치(mod 없이)로 비교 — fret 0과 fret 12는 다른 위치
-  // C shape은 open 포지션(barre=0)일 때 개방현 제외 → min 1
-  const lowClamped = shape === 'C' ? Math.max(low, 1) : Math.max(low, 0)
-  return fret >= lowClamped && fret <= high
+  return fret >= low && fret <= high
 }
