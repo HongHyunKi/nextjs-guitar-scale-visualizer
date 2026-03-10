@@ -63,7 +63,7 @@ export function Fretboard({
   )
 
   const allFrets = useMemo(
-    () => Array.from({ length: frets }, (_, i) => i + 1),  // [1, 2, ..., frets]
+    () => Array.from({ length: frets + 1 }, (_, i) => i), // [0, 1, 2, ..., frets]
     [frets]
   )
 
@@ -99,11 +99,17 @@ export function Fretboard({
     return 'bg-accent-teal text-background shadow-md shadow-accent-teal/30'
   }
 
-  // 프렛별 세로선 스타일 (0=너트, 12=옥타브, 나머지=일반)
+  // 프렛별 세로선 스타일 (12=옥타브, 나머지=일반, 0=너트는 별도 처리)
   const getFretBorderClass = (fret: number) => {
-    if (fret === 0) return 'border-r-[3px] border-zinc-300/60'
+    if (fret === 0) return ''
     if (fret === 12) return 'border-r-2 border-rose-500/70'
     return 'border-r-2 border-zinc-700/80'
+  }
+
+  // 프렛별 너비 클래스
+  const getFretWidthClass = (fret: number) => {
+    if (fret === 0) return 'min-w-[48px] w-[48px] xl:min-w-[52px] xl:w-[52px]'
+    return 'flex-1 min-w-[52px] xl:min-w-[60px]'
   }
 
   return (
@@ -116,33 +122,40 @@ export function Fretboard({
               key={`string-${stringIndex}`}
               className="flex items-stretch h-12"
             >
-              {/* 줄 이름 */}
-              <div className="min-w-4 w-8 flex items-center justify-center text-xs font-medium text-muted-foreground">
-                {openString}
-              </div>
-
               {allFrets.map(fret => {
                 const useFlat = isScaleFlat(rootNote, scaleType)
                 const note = getNoteFromFret(openString, fret, useFlat)
-                const inScale = scaleNotes.some(n => getNoteIndex(n) === getNoteIndex(note))
+                const inScale = scaleNotes.some(
+                  n => getNoteIndex(n) === getNoteIndex(note)
+                )
                 const isRoot = getNoteIndex(note) === getNoteIndex(rootNote)
                 const active = isActiveNote(fret)
+                const isOpenString = fret === 0
 
                 return (
                   <div
                     key={`fret-${stringIndex}-${fret}`}
                     className={cn(
-                      'flex-1 min-w-[52px] xl:min-w-[60px] relative flex items-center justify-center',
+                      'relative flex items-center justify-center',
+                      getFretWidthClass(fret),
                       getFretBorderClass(fret)
                     )}
                   >
                     {/* 현(String) 가로선 */}
                     <div
-                      className="absolute top-1/2 left-0 right-0 bg-zinc-500/50 pointer-events-none"
+                      className={cn(
+                        'absolute top-1/2 right-0 bg-zinc-500/50 pointer-events-none',
+                        isOpenString ? 'left-1/2' : 'left-0'
+                      )}
                       style={{ height: `${1.5 + stringIndex * 0.3}px` }}
                     />
 
-                    {/* 활성 shape 노트: 완전 표시 */}
+                    {/* 0프렛 너트 세로선 (원들의 중앙을 관통) */}
+                    {isOpenString && (
+                      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[6px] bg-zinc-200 pointer-events-none" />
+                    )}
+
+                    {/* 활성 노트 (0프렛 포함, 동일 UI) */}
                     {inScale && active && (
                       <motion.button
                         initial={{ scale: 0 }}
@@ -161,7 +174,7 @@ export function Fretboard({
                       </motion.button>
                     )}
 
-                    {/* 비활성 shape 노트: 흐리게 (음이름 유지) */}
+                    {/* 비활성 shape 노트: 흐리게 */}
                     {inScale && !active && (
                       <motion.button
                         initial={{ scale: 0 }}
@@ -190,7 +203,10 @@ export function Fretboard({
           {allFrets.map(fret => (
             <div
               key={`num-${fret}`}
-              className="flex-1 min-w-[52px] xl:min-w-[60px] flex items-center justify-center"
+              className={cn(
+                'flex items-center justify-center',
+                getFretWidthClass(fret)
+              )}
             >
               {fret > 0 && (
                 <span
@@ -214,7 +230,10 @@ export function Fretboard({
           {allFrets.map(fret => (
             <div
               key={`marker-${fret}`}
-              className="flex-1 min-w-[52px] xl:min-w-[60px] flex items-center justify-center gap-1 h-5"
+              className={cn(
+                'flex items-center justify-center gap-1 h-5',
+                getFretWidthClass(fret)
+              )}
             >
               {[12, 24].includes(fret) ? (
                 <>
