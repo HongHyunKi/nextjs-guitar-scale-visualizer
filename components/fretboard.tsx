@@ -141,18 +141,17 @@ export function Fretboard({
                       getFretBorderClass(fret)
                     )}
                   >
-                    {/* 현(String) 가로선 */}
-                    <div
-                      className={cn(
-                        'absolute top-1/2 right-0 bg-zinc-500/50 pointer-events-none',
-                        isOpenString ? 'left-1/2' : 'left-0'
-                      )}
-                      style={{ height: `${1.5 + stringIndex * 0.3}px` }}
-                    />
+                    {/* 현(String) 가로선 (0프렛 왼쪽은 표시 안 함) */}
+                    {!isOpenString && (
+                      <div
+                        className="absolute top-1/2 left-0 right-0 bg-zinc-500/50 pointer-events-none"
+                        style={{ height: `${1.5 + stringIndex * 0.3}px` }}
+                      />
+                    )}
 
-                    {/* 0프렛 너트 세로선 (원들의 중앙을 관통) */}
+                    {/* 0프렛 너트 세로선 (오른쪽 끝 = 1프렛 경계) */}
                     {isOpenString && (
-                      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[6px] bg-zinc-200 pointer-events-none" />
+                      <div className="absolute inset-y-0 right-0 w-[6px] bg-zinc-200 pointer-events-none" />
                     )}
 
                     {/* 활성 노트 (0프렛 포함, 동일 UI) */}
