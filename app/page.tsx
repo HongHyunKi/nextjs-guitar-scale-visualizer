@@ -14,9 +14,7 @@ import {
   SCALE_LABELS,
   getScaleNotes,
 } from '@/lib/music-utils'
-import {
-  CAGEDSelection,
-} from '@/lib/caged-utils'
+import { CAGEDSelection } from '@/lib/caged-utils'
 
 export default function Page() {
   const [notationType, setNotationType] = useState<NotationType>('alphabetical')
@@ -152,7 +150,6 @@ export default function Page() {
           {/* Scroll indicator */}
           <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-accent-teal/60 via-accent-teal/80 to-accent-teal/60 pointer-events-none opacity-70 xl:opacity-0 rounded-r-xl shadow-lg shadow-accent-teal/50"></div>
         </div>
-
       </div>
     </div>
   )
