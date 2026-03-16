@@ -24,6 +24,7 @@ interface FretboardProps {
   rootNote: string
   scaleType: ScaleType
   notationType: NotationType
+  startFret?: number
   frets?: number
   cagedEnabled?: boolean
   selectedCAGEDShape?: CAGEDSelection
@@ -35,6 +36,7 @@ export function Fretboard({
   rootNote,
   scaleType,
   notationType,
+  startFret = 0,
   frets = 24,
   cagedEnabled = false,
   selectedCAGEDShape = 'all',
@@ -63,8 +65,8 @@ export function Fretboard({
   )
 
   const allFrets = useMemo(
-    () => Array.from({ length: frets + 1 }, (_, i) => i), // [0, 1, 2, ..., frets]
-    [frets]
+    () => Array.from({ length: frets - startFret + 1 }, (_, i) => i + startFret),
+    [frets, startFret]
   )
 
   const playNote = (note: string) => {
@@ -202,7 +204,7 @@ export function Fretboard({
 
         {/* 3. 하단 프렛 번호 */}
         <div className="flex mt-3">
-          <div className="w-8 min-w-4" />
+          {startFret === 0 && <div className="w-8 min-w-4" />}
           {allFrets.map(fret => (
             <div
               key={`num-${fret}`}
@@ -231,7 +233,7 @@ export function Fretboard({
 
         {/* 4. 하단 마커 영역 */}
         <div className="flex mt-2">
-          <div className="w-8 min-w-4" />
+          {startFret === 0 && <div className="w-8 min-w-4" />}
           {allFrets.map(fret => (
             <div
               key={`marker-${fret}`}

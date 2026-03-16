@@ -19,6 +19,7 @@ export default function Page() {
   const [notationType, setNotationType] = useState<NotationType>('alphabetical')
   const [rootNote, setRootNote] = useState('C')
   const [scaleType, setScaleType] = useState<ScaleType>('major')
+  const [startFret, setStartFret] = useState(0)
   const [frets, setFrets] = useState(15)
   const [cagedEnabled, setCagedEnabled] = useState(false)
   const [selectedCAGEDShape, setSelectedCAGEDShape] =
@@ -113,9 +114,15 @@ export default function Page() {
 
               <div className="w-full max-w-xs">
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Frets
+                  Start Fret
                 </label>
-                <FretControl value={frets} onChange={setFrets} />
+                <FretControl value={startFret} onChange={setStartFret} min={0} max={frets - 3} />
+              </div>
+              <div className="w-full max-w-xs">
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  End Fret
+                </label>
+                <FretControl value={frets} onChange={setFrets} min={startFret + 3} max={24} />
               </div>
             </div>
 
@@ -141,6 +148,7 @@ export default function Page() {
               rootNote={rootNote}
               scaleType={scaleType}
               notationType={notationType}
+              startFret={startFret}
               frets={frets}
               cagedEnabled={cagedEnabled}
               selectedCAGEDShape={selectedCAGEDShape}
