@@ -5,7 +5,6 @@ import { Fretboard } from '@/components/fretboard'
 import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
-import { CAGEDSelector } from '@/components/caged-selector'
 import { FretControl } from '@/components/fret-control'
 import { Music } from 'lucide-react'
 import {
@@ -14,9 +13,7 @@ import {
   SCALE_LABELS,
   getScaleNotes,
 } from '@/lib/music-utils'
-import {
-  CAGEDSelection,
-} from '@/lib/caged-utils'
+import { CAGEDSelection } from '@/lib/caged-utils'
 
 export default function Page() {
   const [notationType, setNotationType] = useState<NotationType>('alphabetical')
@@ -122,7 +119,8 @@ export default function Page() {
               </div>
             </div>
 
-            <div>
+            {/* TODO CAGED */}
+            {/* <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 CAGED System
               </label>
@@ -132,7 +130,7 @@ export default function Page() {
                 selectedShape={selectedCAGEDShape}
                 onShapeChange={setSelectedCAGEDShape}
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -152,7 +150,6 @@ export default function Page() {
           {/* Scroll indicator */}
           <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-accent-teal/60 via-accent-teal/80 to-accent-teal/60 pointer-events-none opacity-70 xl:opacity-0 rounded-r-xl shadow-lg shadow-accent-teal/50"></div>
         </div>
-
       </div>
     </div>
   )
