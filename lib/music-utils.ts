@@ -68,6 +68,12 @@ export const SCALE_LABELS: Record<ScaleType, string> = {
 // All notes in chromatic order (sharp notation) — canonical reference
 export const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
+// Chromatic notes with enharmonic flat equivalents for root note selection
+export const CHROMATIC_NOTES_WITH_ENHARMONICS = [
+  'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E',
+  'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
+]
+
 // Flat-to-sharp enharmonic mapping
 const FLAT_TO_SHARP: Record<string, string> = {
   Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#',
