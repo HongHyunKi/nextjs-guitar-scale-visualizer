@@ -139,7 +139,11 @@ export function Fretboard({
                       'relative flex items-center justify-center',
                       getFretBorderClass(fret)
                     )}
-                    style={fret === 0 ? { width: 52, flexShrink: 0 } : { flex: getFretWidth(fret) }}
+                    style={
+                      fret === 0
+                        ? { width: 52, flexShrink: 0 }
+                        : { flex: getFretWidth(fret) }
+                    }
                   >
                     {/* 현(String) 가로선 (0프렛 왼쪽은 표시 안 함) */}
                     {!isOpenString && (
@@ -203,7 +207,11 @@ export function Fretboard({
             <div
               key={`num-${fret}`}
               className="flex items-center justify-center"
-              style={fret === 0 ? { width: 52, flexShrink: 0 } : { flex: getFretWidth(fret) }}
+              style={
+                fret === 0
+                  ? { width: 52, flexShrink: 0 }
+                  : { flex: getFretWidth(fret) }
+              }
             >
               {fret > 0 && (
                 <span
@@ -228,7 +236,11 @@ export function Fretboard({
             <div
               key={`marker-${fret}`}
               className="flex items-center justify-center gap-1 h-5"
-              style={fret === 0 ? { width: 52, flexShrink: 0 } : { flex: getFretWidth(fret) }}
+              style={
+                fret === 0
+                  ? { width: 52, flexShrink: 0 }
+                  : { flex: getFretWidth(fret) }
+              }
             >
               {[12, 24].includes(fret) ? (
                 <>
