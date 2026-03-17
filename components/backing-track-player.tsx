@@ -89,6 +89,7 @@ export function BackingTrackPlayer({
 }: BackingTrackPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [bpm, setBpm] = useState(90)
+  const [bpmInput, setBpmInput] = useState('90')
   const [style, setStyle] = useState<BackingStyle>('rock')
   const [progressionOverride, setProgressionOverride] = useState<
     number[] | null
@@ -265,7 +266,20 @@ export function BackingTrackPlayer({
   }
 
   const handleBpmChange = (delta: number) => {
-    setBpm(prev => Math.min(180, Math.max(60, prev + delta)))
+    const next = Math.min(200, Math.max(60, bpm + delta))
+    setBpm(next)
+    setBpmInput(String(next))
+  }
+
+  const handleBpmInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBpmInput(e.target.value)
+  }
+
+  const handleBpmBlur = () => {
+    const val = parseInt(bpmInput, 10)
+    const clamped = isNaN(val) ? bpm : Math.min(200, Math.max(60, val))
+    setBpm(clamped)
+    setBpmInput(String(clamped))
   }
 
   const cycleSlotChord = (slotIndex: number, direction: 1 | -1) => {
@@ -346,9 +360,16 @@ export function BackingTrackPlayer({
             >
               −
             </button>
-            <span className="w-10 text-center text-sm font-mono font-semibold tabular-nums">
-              {bpm}
-            </span>
+            <input
+              type="number"
+              min={60}
+              max={200}
+              value={bpmInput}
+              onChange={handleBpmInputChange}
+              onFocus={e => e.target.select()}
+              onBlur={handleBpmBlur}
+              className="w-14 text-center text-sm font-mono font-semibold tabular-nums bg-muted rounded-md px-1 py-1 border-0 outline-none focus:ring-1 focus:ring-accent-teal [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
             <button
               onClick={() => handleBpmChange(5)}
               className="w-8 h-8 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground font-bold transition-colors"
