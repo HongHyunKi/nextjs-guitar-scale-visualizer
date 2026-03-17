@@ -151,10 +151,13 @@ const STYLE_LABELS: Record<BackingStyle, string> = {
   jazz: 'Jazz',
 }
 
+type PlayerMode = 'backing' | 'metronome'
+
 export function BackingTrackPlayer({
   rootNote,
   scaleType,
 }: BackingTrackPlayerProps) {
+  const [mode, setMode] = useState<PlayerMode>('backing')
   const [isPlaying, setIsPlaying] = useState(false)
   const [bpm, setBpm] = useState(90)
   const [bpmInput, setBpmInput] = useState('90')
@@ -163,6 +166,7 @@ export function BackingTrackPlayer({
     number[] | null
   >(null)
   const [currentBeat, setCurrentBeat] = useState<number | null>(null)
+  const [quarterBeat, setQuarterBeat] = useState<number | null>(null)
   const [samplerLoaded, setSamplerLoaded] = useState(false)
   const [subdivision, setSubdivision] = useState<Subdivision>('8beat')
   const [chordVolume, setChordVolume] = useState(60)
@@ -180,6 +184,7 @@ export function BackingTrackPlayer({
   const hihatRef = useRef<Tone.MetalSynth | null>(null)
   const chordSeqRef = useRef<Tone.Sequence<Chord> | null>(null)
   const drumSeqRef = useRef<Tone.Sequence<DrumStep> | null>(null)
+  const drumStepRef = useRef(0)
 
   // Initialize audio instruments once on mount
   useEffect(() => {
@@ -234,19 +239,17 @@ export function BackingTrackPlayer({
 
   // Rebuild sequences whenever playback params change
   useEffect(() => {
-    setCurrentBeat(null) // Bug 3: 하이라이트 즉시 초기화
+    setCurrentBeat(null)
+    setQuarterBeat(null)
+    drumStepRef.current = 0
     chordSeqRef.current?.dispose()
     drumSeqRef.current?.dispose()
     Tone.getTransport().stop() // Bug 2: cancel 전에 stop
     Tone.getTransport().cancel()
     Tone.getTransport().position = 0 // Bug 2: position 리셋
 
-    if (!isPlaying || !samplerLoaded) return
-
-    const { chords } = getDiatonicChords(rootNote, scaleType)
-    const progression = progressionIndices.map(
-      i => chords[Math.min(i, chords.length - 1)]
-    )
+    if (!isPlaying) return
+    if (mode === 'backing' && !samplerLoaded) return
 
     Tone.getTransport().bpm.value = bpm
 
@@ -261,34 +264,51 @@ export function BackingTrackPlayer({
       Tone.getTransport().swing = 0
     }
 
-    let beatStep = 0
+    if (mode === 'backing') {
+      const { chords } = getDiatonicChords(rootNote, scaleType)
+      const progression = progressionIndices.map(
+        i => chords[Math.min(i, chords.length - 1)]
+      )
 
-    chordSeqRef.current = new Tone.Sequence<Chord>(
-      (time, chord) => {
-        const step = beatStep % progression.length
-        beatStep++
+      let beatStep = 0
 
-        // Update UI slightly before the chord sounds
-        const delay = Math.max(0, (time - Tone.now()) * 1000 - 20)
-        setTimeout(() => setCurrentBeat(step), delay)
+      chordSeqRef.current = new Tone.Sequence<Chord>(
+        (time, chord) => {
+          const step = beatStep % progression.length
+          beatStep++
 
-        if (samplerRef.current) {
-          chord.midiNotes.forEach((midi, i) => {
-            const noteName = Tone.Frequency(midi, 'midi').toNote()
-            samplerRef.current!.triggerAttackRelease(
-              noteName,
-              '2n',
-              time + i * 0.04
-            )
-          })
-        }
-      },
-      progression,
-      '1m'
-    )
+          const delay = Math.max(0, (time - Tone.now()) * 1000 - 20)
+          setTimeout(() => setCurrentBeat(step), delay)
+
+          if (samplerRef.current) {
+            chord.midiNotes.forEach((midi, i) => {
+              const noteName = Tone.Frequency(midi, 'midi').toNote()
+              samplerRef.current!.triggerAttackRelease(
+                noteName,
+                '2n',
+                time + i * 0.04
+              )
+            })
+          }
+        },
+        progression,
+        '1m'
+      )
+      chordSeqRef.current.start(0)
+    }
+
+    const stepsPerMeasure = DRUM_PATTERNS[style][subdivision].length
+    const stepsPerQuarter = stepsPerMeasure / 4
 
     drumSeqRef.current = new Tone.Sequence<DrumStep>(
       (time, step) => {
+        const stepIdx = drumStepRef.current % stepsPerMeasure
+        drumStepRef.current++
+
+        const qBeat = Math.floor(stepIdx / stepsPerQuarter)
+        const delay = Math.max(0, (time - Tone.now()) * 1000 - 20)
+        setTimeout(() => setQuarterBeat(qBeat), delay)
+
         if (step.kick) kickRef.current?.triggerAttackRelease('C1', '8n', time)
         if (step.snare) snareRef.current?.triggerAttackRelease('8n', time)
         if (step.hihat) hihatRef.current?.triggerAttackRelease('32n', time)
@@ -297,11 +317,11 @@ export function BackingTrackPlayer({
       SUBDIVISION_NOTE[subdivision]
     )
 
-    chordSeqRef.current.start(0)
     drumSeqRef.current.start(0)
     Tone.getTransport().start()
   }, [
     isPlaying,
+    mode,
     rootNote,
     scaleType,
     style,
@@ -328,6 +348,11 @@ export function BackingTrackPlayer({
   const handleTogglePlay = async () => {
     await Tone.start()
     setIsPlaying(prev => !prev)
+  }
+
+  const handleSetMode = (m: PlayerMode) => {
+    setIsPlaying(false)
+    setMode(m)
   }
 
   const handleSetStyle = (s: BackingStyle) => {
@@ -369,24 +394,42 @@ export function BackingTrackPlayer({
     <div className="bg-card border border-border rounded-xl p-6 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Backing Track
-          </p>
+        <div className="relative inline-flex p-1 bg-muted rounded-lg">
+          {(['backing', 'metronome'] as PlayerMode[]).map(m => (
+            <button
+              key={m}
+              onClick={() => handleSetMode(m)}
+              className={cn(
+                'relative px-4 py-1.5 text-sm font-medium rounded-md transition-colors z-10',
+                mode === m
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {mode === m && (
+                <motion.div
+                  layoutId="player-mode"
+                  className="absolute inset-0 bg-background rounded-md shadow-sm z-[-1]"
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              )}
+              {m === 'backing' ? '배킹트랙' : '메트로놈'}
+            </button>
+          ))}
         </div>
         <button
           onClick={handleTogglePlay}
-          disabled={!samplerLoaded}
+          disabled={mode === 'backing' && !samplerLoaded}
           className={cn(
             'px-5 py-2 rounded-lg text-sm font-semibold transition-all',
             isPlaying
               ? 'bg-accent-orange text-background hover:opacity-90'
-              : samplerLoaded
+              : mode === 'metronome' || samplerLoaded
                 ? 'bg-accent-teal text-background hover:opacity-90'
                 : 'bg-muted text-muted-foreground cursor-not-allowed'
           )}
         >
-          {!samplerLoaded ? 'Loading...' : isPlaying ? '■ Stop' : '▶ Play'}
+          {mode === 'backing' && !samplerLoaded ? 'Loading...' : isPlaying ? '■ Stop' : '▶ Play'}
         </button>
       </div>
 
@@ -481,6 +524,7 @@ export function BackingTrackPlayer({
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">Volume</p>
           <div className="flex flex-col gap-1.5">
+            {mode === 'backing' && (
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-muted-foreground w-10">
                 Piano
@@ -497,6 +541,7 @@ export function BackingTrackPlayer({
                 {chordVolume}
               </span>
             </div>
+            )}
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-muted-foreground w-10">
                 Drums
@@ -517,62 +562,93 @@ export function BackingTrackPlayer({
         </div>
       </div>
 
-      {/* Loop progression */}
-      <div className="space-y-2">
-        <p className="text-xs text-muted-foreground">Loop (4 bars)</p>
-        <div className="flex flex-wrap gap-3">
-          {progressionIndices.map((chordIdx, slotIndex) => {
-            const chord = chords[Math.min(chordIdx, chords.length - 1)]
-            const isActive = isPlaying && currentBeat === slotIndex
-            return (
-              <div
-                key={slotIndex}
-                className={cn(
-                  'flex items-center gap-1 px-3 py-2 rounded-lg border transition-all',
-                  isActive
-                    ? 'bg-accent-orange/20 border-accent-orange text-accent-orange'
-                    : 'bg-muted/30 border-border text-foreground'
-                )}
-              >
-                <button
-                  onClick={() => cycleSlotChord(slotIndex, -1)}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-xs px-1"
+      {/* Beat Indicator */}
+      <div className="flex justify-center items-center gap-4 py-1">
+        {[0, 1, 2, 3].map(i => {
+          const isActive = isPlaying && quarterBeat === i
+          const isDownbeat = i === 0
+          return (
+            <motion.div
+              key={i}
+              animate={
+                isActive
+                  ? { scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }
+                  : { scale: 1, opacity: 0.2 }
+              }
+              transition={{ duration: (60 / bpm) * 0.7, ease: 'easeOut' }}
+              className={cn(
+                'rounded-full',
+                isActive
+                  ? isDownbeat
+                    ? 'w-5 h-5 bg-accent-orange shadow-[0_0_8px_2px_var(--accent-orange)]'
+                    : 'w-5 h-5 bg-accent-teal shadow-[0_0_8px_2px_var(--accent-teal)]'
+                  : 'w-4 h-4 bg-muted-foreground/30'
+              )}
+            />
+          )
+        })}
+      </div>
+
+      {mode === 'backing' && (
+        <>
+          {/* Loop progression */}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">Loop (4 bars)</p>
+            <div className="flex flex-wrap gap-3">
+              {progressionIndices.map((chordIdx, slotIndex) => {
+                const chord = chords[Math.min(chordIdx, chords.length - 1)]
+                const isActive = isPlaying && currentBeat === slotIndex
+                return (
+                  <div
+                    key={slotIndex}
+                    className={cn(
+                      'flex items-center gap-1 px-3 py-2 rounded-lg border transition-all',
+                      isActive
+                        ? 'bg-accent-orange/20 border-accent-orange text-accent-orange'
+                        : 'bg-muted/30 border-border text-foreground'
+                    )}
+                  >
+                    <button
+                      onClick={() => cycleSlotChord(slotIndex, -1)}
+                      className="text-muted-foreground hover:text-foreground transition-colors text-xs px-1"
+                    >
+                      ‹
+                    </button>
+                    <div className="text-center min-w-[48px]">
+                      <div className="text-sm font-bold">
+                        {getChordLabel(chord)}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => cycleSlotChord(slotIndex, 1)}
+                      className="text-muted-foreground hover:text-foreground transition-colors text-xs px-1"
+                    >
+                      ›
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Diatonic chords reference */}
+          <div className="space-y-2 border-t border-border pt-4">
+            <p className="text-xs text-muted-foreground">Diatonic Chords</p>
+            <div className="flex flex-wrap gap-2">
+              {chords.map((chord, i) => (
+                <div
+                  key={i}
+                  className="px-3 py-1.5 rounded-md bg-muted/50 text-center"
                 >
-                  ‹
-                </button>
-                <div className="text-center min-w-[48px]">
-                  <div className="text-sm font-bold">
+                  <div className="text-xs font-semibold text-foreground">
                     {getChordLabel(chord)}
                   </div>
                 </div>
-                <button
-                  onClick={() => cycleSlotChord(slotIndex, 1)}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-xs px-1"
-                >
-                  ›
-                </button>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Diatonic chords reference */}
-      <div className="space-y-2 border-t border-border pt-4">
-        <p className="text-xs text-muted-foreground">Diatonic Chords</p>
-        <div className="flex flex-wrap gap-2">
-          {chords.map((chord, i) => (
-            <div
-              key={i}
-              className="px-3 py-1.5 rounded-md bg-muted/50 text-center"
-            >
-              <div className="text-xs font-semibold text-foreground">
-                {getChordLabel(chord)}
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
