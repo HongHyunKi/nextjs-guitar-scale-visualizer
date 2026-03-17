@@ -95,6 +95,8 @@ export function BackingTrackPlayer({
   >(null)
   const [currentBeat, setCurrentBeat] = useState<number | null>(null)
   const [samplerLoaded, setSamplerLoaded] = useState(false)
+  const [chordVolume, setChordVolume] = useState(70)
+  const [drumVolume, setDrumVolume] = useState(80)
 
   // Derived: 수동 오버라이드 없으면 스타일 프리셋 사용 (useMemo로 레퍼런스 안정화)
   const progressionIndices = useMemo(
@@ -238,6 +240,20 @@ export function BackingTrackPlayer({
     samplerLoaded,
   ])
 
+  // 볼륨 변경 시 즉시 반영
+  useEffect(() => {
+    if (samplerRef.current) {
+      samplerRef.current.volume.value = Tone.gainToDb(chordVolume / 100)
+    }
+  }, [chordVolume])
+
+  useEffect(() => {
+    const offset = Tone.gainToDb(drumVolume / 100)
+    if (kickRef.current) kickRef.current.volume.value = -6 + offset
+    if (snareRef.current) snareRef.current.volume.value = -10 + offset
+    if (hihatRef.current) hihatRef.current.volume.value = -18 + offset
+  }, [drumVolume])
+
   const handleTogglePlay = async () => {
     await Tone.start()
     setIsPlaying(prev => !prev)
@@ -339,6 +355,45 @@ export function BackingTrackPlayer({
             >
               +
             </button>
+          </div>
+        </div>
+
+        {/* Volume controls */}
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">Volume</p>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground w-10">
+                Piano
+              </span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={chordVolume}
+                onChange={e => setChordVolume(Number(e.target.value))}
+                className="w-24 accent-accent-teal"
+              />
+              <span className="text-[11px] text-muted-foreground w-7 tabular-nums">
+                {chordVolume}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground w-10">
+                Drums
+              </span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={drumVolume}
+                onChange={e => setDrumVolume(Number(e.target.value))}
+                className="w-24 accent-accent-teal"
+              />
+              <span className="text-[11px] text-muted-foreground w-7 tabular-nums">
+                {drumVolume}
+              </span>
+            </div>
           </div>
         </div>
       </div>
