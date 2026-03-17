@@ -6,6 +6,7 @@ import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
 import { FretControl } from '@/components/fret-control'
+import { BackingTrackPlayer } from '@/components/backing-track-player'
 import { Music } from 'lucide-react'
 import {
   ScaleType,
@@ -150,6 +151,9 @@ export default function Page() {
             </div> */}
           </div>
         </div>
+
+        {/* Backing Track Player */}
+        <BackingTrackPlayer rootNote={rootNote} scaleType={scaleType} />
 
         {/* Fretboard */}
         <div className="relative">
