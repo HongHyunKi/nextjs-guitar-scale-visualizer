@@ -126,5 +126,7 @@ export function isInCAGEDShapeRange(
   // fret >= 12 가드: fret 0-11은 1st octave이므로 두 번째 조건(+12) 적용 안 함
   // 미적용 시 예: Am D pos [9,13]에서 fret 0 → f+12=12 ∈ [9,13] 으로 잘못 포함됨
   const f = fret % 12
-  return (f >= low && f <= high) || (fret >= 12 && f + 12 >= low && f + 12 <= high)
+  return (
+    (f >= low && f <= high) || (fret >= 12 && f + 12 >= low && f + 12 <= high)
+  )
 }

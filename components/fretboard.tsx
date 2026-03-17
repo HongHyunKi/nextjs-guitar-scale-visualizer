@@ -65,7 +65,8 @@ export function Fretboard({
   )
 
   const allFrets = useMemo(
-    () => Array.from({ length: frets - startFret + 1 }, (_, i) => i + startFret),
+    () =>
+      Array.from({ length: frets - startFret + 1 }, (_, i) => i + startFret),
     [frets, startFret]
   )
 

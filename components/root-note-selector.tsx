@@ -2,7 +2,11 @@
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { noteToFixedSolfege, CHROMATIC_NOTES_WITH_ENHARMONICS, NotationType } from '@/lib/music-utils'
+import {
+  noteToFixedSolfege,
+  CHROMATIC_NOTES_WITH_ENHARMONICS,
+  NotationType,
+} from '@/lib/music-utils'
 
 interface RootNoteSelectorProps {
   rootNote: string

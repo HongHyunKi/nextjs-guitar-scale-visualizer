@@ -47,7 +47,7 @@ Never recompute scale membership, flat/sharp preference, or note names anywhere 
 - Internal chromatic index: `0` (C) through `11` (B) — always sharp-based internally
 - Display notation: determined at render time based on root key convention
 - Sharp reference: `['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']`
-- Flat reference:  `['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B']`
+- Flat reference: `['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B']`
 
 ### Sharp/Flat Preference Logic (`shouldUseFlat`)
 
@@ -63,18 +63,18 @@ if natural root:
 
 **When adding new scales**, assign each scale an `isMinor: boolean` (or more precisely a `character: 'major' | 'minor'`) that feeds into `shouldUseFlat`. Modes break down as:
 
-| Scale           | Character | isMinor |
-|-----------------|-----------|---------|
-| Major           | major     | false   |
-| Major Pentatonic| major     | false   |
-| Lydian          | major     | false   |
-| Mixolydian      | major     | false   |
-| Minor           | minor     | true    |
-| Minor Pentatonic| minor     | true    |
-| Dorian          | minor     | true    |
-| Phrygian        | minor     | true    |
-| Harmonic Minor  | minor     | true    |
-| Melodic Minor   | minor     | true    |
+| Scale            | Character | isMinor |
+| ---------------- | --------- | ------- |
+| Major            | major     | false   |
+| Major Pentatonic | major     | false   |
+| Lydian           | major     | false   |
+| Mixolydian       | major     | false   |
+| Minor            | minor     | true    |
+| Minor Pentatonic | minor     | true    |
+| Dorian           | minor     | true    |
+| Phrygian         | minor     | true    |
+| Harmonic Minor   | minor     | true    |
+| Melodic Minor    | minor     | true    |
 
 ---
 
@@ -82,25 +82,26 @@ if natural root:
 
 ### Currently Implemented
 
-| ScaleType           | Intervals (semitones) | Formula            |
-|---------------------|-----------------------|--------------------|
-| `major`             | [0,2,4,5,7,9,11]      | 1 2 3 4 5 6 7      |
-| `minor`             | [0,2,3,5,7,8,10]      | 1 2 b3 4 5 b6 b7   |
-| `major-pentatonic`  | [0,2,4,7,9]           | 1 2 3 5 6          |
-| `minor-pentatonic`  | [0,3,5,7,10]          | 1 b3 4 5 b7        |
+| ScaleType          | Intervals (semitones) | Formula          |
+| ------------------ | --------------------- | ---------------- |
+| `major`            | [0,2,4,5,7,9,11]      | 1 2 3 4 5 6 7    |
+| `minor`            | [0,2,3,5,7,8,10]      | 1 2 b3 4 5 b6 b7 |
+| `major-pentatonic` | [0,2,4,7,9]           | 1 2 3 5 6        |
+| `minor-pentatonic` | [0,3,5,7,10]          | 1 b3 4 5 b7      |
 
 ### Planned — Add in This Order
 
-| Scale              | Intervals (semitones)   | Formula               | Genre Context                        |
-|--------------------|-------------------------|-----------------------|--------------------------------------|
-| Dorian             | [0,2,3,5,7,9,10]        | 1 2 b3 4 5 6 b7       | Blues, Jazz, Funk — essential         |
-| Mixolydian         | [0,2,4,5,7,9,10]        | 1 2 3 4 5 6 b7        | Dominant 7th chords, Rock, Country   |
-| Lydian             | [0,2,4,6,7,9,11]        | 1 2 3 #4 5 6 7        | Film scores, dreamy/ethereal sound   |
-| Phrygian           | [0,1,3,5,7,8,10]        | 1 b2 b3 4 5 b6 b7     | Metal, Flamenco, Spanish             |
-| Harmonic Minor     | [0,2,3,5,7,8,11]        | 1 2 b3 4 5 b6 7       | Neo-classical Metal, Classical       |
-| Melodic Minor      | [0,2,3,5,7,9,11]        | 1 2 b3 4 5 6 7        | Modern Jazz — ascending form only    |
+| Scale          | Intervals (semitones) | Formula           | Genre Context                      |
+| -------------- | --------------------- | ----------------- | ---------------------------------- |
+| Dorian         | [0,2,3,5,7,9,10]      | 1 2 b3 4 5 6 b7   | Blues, Jazz, Funk — essential      |
+| Mixolydian     | [0,2,4,5,7,9,10]      | 1 2 3 4 5 6 b7    | Dominant 7th chords, Rock, Country |
+| Lydian         | [0,2,4,6,7,9,11]      | 1 2 3 #4 5 6 7    | Film scores, dreamy/ethereal sound |
+| Phrygian       | [0,1,3,5,7,8,10]      | 1 b2 b3 4 5 b6 b7 | Metal, Flamenco, Spanish           |
+| Harmonic Minor | [0,2,3,5,7,8,11]      | 1 2 b3 4 5 b6 7   | Neo-classical Metal, Classical     |
+| Melodic Minor  | [0,2,3,5,7,9,11]      | 1 2 b3 4 5 6 7    | Modern Jazz — ascending form only  |
 
 **Implementation checklist for each new scale:**
+
 1. Add interval constant in `lib/music-utils.ts` (e.g., `const DORIAN_INTERVALS = [...]`)
 2. Add to `ScaleType` union type
 3. Add to `SCALE_LABELS` record
@@ -118,14 +119,15 @@ if natural root:
 
 ```typescript
 // CURRENT (broken):
-const useFlat = scaleType.includes('minor')  // ← hardcoded logic, independent of music-utils
+const useFlat = scaleType.includes('minor') // ← hardcoded logic, independent of music-utils
 const note = getNoteFromFret(openString, fret, useFlat)
-const inScale = scaleNotes.includes(note)    // ← string comparison fails on enharmonic mismatch
+const inScale = scaleNotes.includes(note) // ← string comparison fails on enharmonic mismatch
 ```
 
 **Problem:** `getScaleNotes` now uses `shouldUseFlat` (root-aware), but `getNoteFromFret` in the fretboard uses a different rule. For sharp-rooted minor scales (e.g., D# minor pentatonic), `getScaleNotes` returns `['D#','F#','G#','A#','C#']` but the fretboard generates `'Gb'` for the same note — `'Gb'` is not in the scale array → note is not highlighted even though it should be.
 
 **Fix required:** Either:
+
 - (A) Export `shouldUseFlat` from `music-utils.ts` and use it in the fretboard, OR
 - (B) Compare notes by chromatic index instead of string equality:
   ```typescript
@@ -138,6 +140,7 @@ const inScale = scaleNotes.includes(note)    // ← string comparison fails on e
 ### Sharp/Flat Convention Gaps
 
 The `MINOR_FLAT_ROOTS` set (`D G C F Bb Eb Ab`) is an approximation. Edge cases:
+
 - `B minor` → conventionally uses sharps (F#, C#) ✓ (correct, B not in set)
 - `E minor` → uses sharps (F#) ✓ (E not in set)
 - `A minor` → no accidentals, either works ✓
@@ -167,14 +170,15 @@ A scale implementation is only considered correct when all of the following pass
 
 **1. All 12 roots must be tested**, covering:
 
-| Category       | Roots                      |
-|----------------|----------------------------|
-| Natural sharps | C G D A E B                |
-| Natural flats  | F                          |
-| Sharps         | C# D# F# G# A#             |
-| Flats          | Db Eb Gb Ab Bb             |
+| Category       | Roots          |
+| -------------- | -------------- |
+| Natural sharps | C G D A E B    |
+| Natural flats  | F              |
+| Sharps         | C# D# F# G# A# |
+| Flats          | Db Eb Gb Ab Bb |
 
 **2. For each root, verify:**
+
 - Correct number of notes (e.g., 5 for pentatonic, 7 for diatonic)
 - Root note spelled correctly (must match the input root, not its enharmonic)
 - All notes use consistent accidental style (no mixing `F#` and `Gb` in the same scale)
@@ -206,42 +210,50 @@ These should be tested as a pair.
 
 ### Example: Correct Major Pentatonic for All 12 Roots
 
-| Root | Scale                     |
-|------|---------------------------|
-| C    | C D E G A                 |
-| C#   | C# D# F G# A#             |
-| Db   | Db Eb F Ab Bb             |
-| D    | D E F# A B                |
-| D#   | D# F G A# C               |
-| Eb   | Eb F G Bb C               |
-| E    | E F# G# B C#              |
-| F    | F G A C D                 |
-| F#   | F# G# A# C# D#            |
-| Gb   | Gb Ab Bb Db Eb            |
-| G    | G A B D E                 |
-| G#   | G# A# C D# F              |
-| Ab   | Ab Bb C Eb F              |
-| A    | A B C# E F#               |
-| A#   | A# C D F G                |
-| Bb   | Bb C D F G                |
-| B    | B C# D# F# G#             |
+| Root | Scale          |
+| ---- | -------------- |
+| C    | C D E G A      |
+| C#   | C# D# F G# A#  |
+| Db   | Db Eb F Ab Bb  |
+| D    | D E F# A B     |
+| D#   | D# F G A# C    |
+| Eb   | Eb F G Bb C    |
+| E    | E F# G# B C#   |
+| F    | F G A C D      |
+| F#   | F# G# A# C# D# |
+| Gb   | Gb Ab Bb Db Eb |
+| G    | G A B D E      |
+| G#   | G# A# C D# F   |
+| Ab   | Ab Bb C Eb F   |
+| A    | A B C# E F#    |
+| A#   | A# C D F G     |
+| Bb   | Bb C D F G     |
+| B    | B C# D# F# G#  |
 
 ---
 
 ## Adding a New Scale — Step-by-Step
 
 1. **Add interval constant** in `lib/music-utils.ts`:
+
    ```typescript
    // Dorian intervals - 1, 2, b3, 4, 5, 6, b7
    const DORIAN_INTERVALS = [0, 2, 3, 5, 7, 9, 10]
    ```
 
 2. **Extend `ScaleType`**:
+
    ```typescript
-   export type ScaleType = 'major' | 'minor' | 'major-pentatonic' | 'minor-pentatonic' | 'dorian'
+   export type ScaleType =
+     | 'major'
+     | 'minor'
+     | 'major-pentatonic'
+     | 'minor-pentatonic'
+     | 'dorian'
    ```
 
 3. **Add label**:
+
    ```typescript
    export const SCALE_LABELS: Record<ScaleType, string> = {
      ...
@@ -250,6 +262,7 @@ These should be tested as a pair.
    ```
 
 4. **Add case in `getScaleNotes`**:
+
    ```typescript
    case 'dorian': intervals = DORIAN_INTERVALS; isMinor = true; break
    ```
