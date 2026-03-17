@@ -12,8 +12,8 @@ interface NotationToggleProps {
 export function NotationToggle({ type, onTypeChange }: NotationToggleProps) {
   const items: { type: NotationType; label: string }[] = [
     { type: 'alphabetical', label: 'CDE' },
-    { type: 'syllabic', label: '도레미' },
     { type: 'intervals', label: '123' },
+    { type: 'syllabic', label: '도레미' },
   ]
 
   return (
