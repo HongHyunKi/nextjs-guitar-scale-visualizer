@@ -19,62 +19,130 @@ interface BackingTrackPlayerProps {
 }
 
 type DrumStep = { kick: boolean; snare: boolean; hihat: boolean }
+type Subdivision = '4beat' | '8beat' | '16beat'
 
-const DRUM_PATTERNS: Record<BackingStyle, DrumStep[]> = {
-  rock: [
-    { kick: true, snare: false, hihat: true }, // 0
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 2
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: true, hihat: true }, // 4 (beat 2)
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 6
-    { kick: false, snare: false, hihat: false },
-    { kick: true, snare: false, hihat: true }, // 8 (beat 3)
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 10
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: true, hihat: true }, // 12 (beat 4)
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 14
-    { kick: false, snare: false, hihat: false },
-  ],
-  blues: [
-    { kick: true, snare: false, hihat: true }, // 0
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 3 (shuffle)
-    { kick: false, snare: true, hihat: false }, // 4
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 6 (shuffle)
-    { kick: false, snare: false, hihat: false },
-    { kick: true, snare: false, hihat: true }, // 8
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 11 (shuffle)
-    { kick: false, snare: true, hihat: false }, // 12
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 14 (shuffle)
-    { kick: false, snare: false, hihat: false },
-  ],
-  jazz: [
-    { kick: true, snare: false, hihat: true }, // 0
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 2
-    { kick: false, snare: false, hihat: true }, // 3 (triplet feel)
-    { kick: false, snare: true, hihat: false }, // 4
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 6
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 8
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 10
-    { kick: false, snare: false, hihat: true }, // 11 (triplet feel)
-    { kick: false, snare: true, hihat: false }, // 12
-    { kick: false, snare: false, hihat: false },
-    { kick: false, snare: false, hihat: true }, // 14
-    { kick: false, snare: false, hihat: false },
-  ],
+const SUBDIVISION_NOTE: Record<Subdivision, string> = {
+  '4beat': '4n',
+  '8beat': '8n',
+  '16beat': '16n',
+}
+
+const SUBDIVISION_LABELS: Record<Subdivision, string> = {
+  '4beat': '4비트',
+  '8beat': '8비트',
+  '16beat': '16비트',
+}
+
+// 4비트: 4스텝(4분음표), 8비트: 8스텝(8분음표), 16비트: 16스텝(16분음표)
+const DRUM_PATTERNS: Record<BackingStyle, Record<Subdivision, DrumStep[]>> = {
+  rock: {
+    '4beat': [
+      { kick: true, snare: false, hihat: true }, // beat 1
+      { kick: false, snare: true, hihat: true }, // beat 2
+      { kick: true, snare: false, hihat: true }, // beat 3
+      { kick: false, snare: true, hihat: true }, // beat 4
+    ],
+    '8beat': [
+      { kick: true, snare: false, hihat: true }, // 1 down
+      { kick: false, snare: false, hihat: true }, // 1 up
+      { kick: false, snare: true, hihat: true }, // 2 down
+      { kick: false, snare: false, hihat: true }, // 2 up
+      { kick: true, snare: false, hihat: true }, // 3 down
+      { kick: false, snare: false, hihat: true }, // 3 up
+      { kick: false, snare: true, hihat: true }, // 4 down
+      { kick: false, snare: false, hihat: true }, // 4 up
+    ],
+    '16beat': [
+      { kick: true, snare: false, hihat: true }, // beat 1
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: true, hihat: true }, // beat 2
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: true, snare: false, hihat: true }, // beat 3
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: true, hihat: true }, // beat 4
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+    ],
+  },
+  blues: {
+    '4beat': [
+      { kick: true, snare: false, hihat: true },
+      { kick: false, snare: true, hihat: false },
+      { kick: true, snare: false, hihat: true },
+      { kick: false, snare: true, hihat: false },
+    ],
+    '8beat': [
+      { kick: true, snare: false, hihat: true }, // 1 down (swing 적용)
+      { kick: false, snare: false, hihat: true }, // 1 up
+      { kick: false, snare: true, hihat: false }, // 2 down
+      { kick: false, snare: false, hihat: true }, // 2 up (shuffle)
+      { kick: true, snare: false, hihat: true }, // 3 down
+      { kick: false, snare: false, hihat: true }, // 3 up
+      { kick: false, snare: true, hihat: false }, // 4 down
+      { kick: false, snare: false, hihat: true }, // 4 up (shuffle)
+    ],
+    '16beat': [
+      { kick: true, snare: false, hihat: true }, // beat 1
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true }, // shuffle accent
+      { kick: false, snare: true, hihat: true }, // beat 2
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true }, // shuffle accent
+      { kick: false, snare: false, hihat: true },
+      { kick: true, snare: false, hihat: true }, // beat 3
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true }, // shuffle accent
+      { kick: false, snare: true, hihat: true }, // beat 4
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true }, // shuffle accent
+      { kick: false, snare: false, hihat: true },
+    ],
+  },
+  jazz: {
+    '4beat': [
+      { kick: true, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: true, hihat: true },
+      { kick: false, snare: false, hihat: true },
+    ],
+    '8beat': [
+      { kick: true, snare: false, hihat: true }, // 1
+      { kick: false, snare: false, hihat: true }, // 1+ (swing)
+      { kick: false, snare: true, hihat: false }, // 2
+      { kick: false, snare: false, hihat: true }, // 2+ (swing)
+      { kick: false, snare: false, hihat: true }, // 3
+      { kick: false, snare: false, hihat: true }, // 3+ (swing)
+      { kick: false, snare: true, hihat: false }, // 4
+      { kick: false, snare: false, hihat: true }, // 4+ (swing)
+    ],
+    '16beat': [
+      { kick: true, snare: false, hihat: true }, // beat 1
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true }, // triplet accent
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: true, hihat: true }, // beat 2
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true }, // beat 3
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true }, // triplet accent
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: true, hihat: true }, // beat 4
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+      { kick: false, snare: false, hihat: true },
+    ],
+  },
 }
 
 const STYLE_LABELS: Record<BackingStyle, string> = {
@@ -96,7 +164,8 @@ export function BackingTrackPlayer({
   >(null)
   const [currentBeat, setCurrentBeat] = useState<number | null>(null)
   const [samplerLoaded, setSamplerLoaded] = useState(false)
-  const [chordVolume, setChordVolume] = useState(70)
+  const [subdivision, setSubdivision] = useState<Subdivision>('8beat')
+  const [chordVolume, setChordVolume] = useState(60)
   const [drumVolume, setDrumVolume] = useState(80)
 
   // Derived: 수동 오버라이드 없으면 스타일 프리셋 사용 (useMemo로 레퍼런스 안정화)
@@ -224,8 +293,8 @@ export function BackingTrackPlayer({
         if (step.snare) snareRef.current?.triggerAttackRelease('8n', time)
         if (step.hihat) hihatRef.current?.triggerAttackRelease('32n', time)
       },
-      DRUM_PATTERNS[style],
-      '16n'
+      DRUM_PATTERNS[style][subdivision],
+      SUBDIVISION_NOTE[subdivision]
     )
 
     chordSeqRef.current.start(0)
@@ -236,6 +305,7 @@ export function BackingTrackPlayer({
     rootNote,
     scaleType,
     style,
+    subdivision,
     bpm,
     progressionIndices,
     samplerLoaded,
@@ -345,6 +415,34 @@ export function BackingTrackPlayer({
                   />
                 )}
                 {STYLE_LABELS[s]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Subdivision selector */}
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">비트</p>
+          <div className="relative inline-flex p-1 bg-muted rounded-lg">
+            {(Object.keys(SUBDIVISION_LABELS) as Subdivision[]).map(s => (
+              <button
+                key={s}
+                onClick={() => setSubdivision(s)}
+                className={cn(
+                  'relative px-4 py-2 text-sm font-medium rounded-md transition-colors z-10',
+                  subdivision === s
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {subdivision === s && (
+                  <motion.div
+                    layoutId="backing-subdivision"
+                    className="absolute inset-0 bg-background rounded-md shadow-sm z-[-1]"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+                {SUBDIVISION_LABELS[s]}
               </button>
             ))}
           </div>
