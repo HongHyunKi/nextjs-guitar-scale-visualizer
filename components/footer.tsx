@@ -12,7 +12,7 @@ export function Footer() {
 
           <div className="flex items-center gap-4">
             <a
-              href="https://github.com/HongHyunKi"
+              href="https://github.com/HongHyunKi/nextjs-guitar-scale-visualizer"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
