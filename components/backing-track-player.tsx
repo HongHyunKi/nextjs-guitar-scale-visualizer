@@ -429,7 +429,11 @@ export function BackingTrackPlayer({
                 : 'bg-muted text-muted-foreground cursor-not-allowed'
           )}
         >
-          {mode === 'backing' && !samplerLoaded ? 'Loading...' : isPlaying ? '■ Stop' : '▶ Play'}
+          {mode === 'backing' && !samplerLoaded
+            ? 'Loading...'
+            : isPlaying
+              ? '■ Stop'
+              : '▶ Play'}
         </button>
       </div>
 
@@ -525,22 +529,22 @@ export function BackingTrackPlayer({
           <p className="text-xs text-muted-foreground">Volume</p>
           <div className="flex flex-col gap-1.5">
             {mode === 'backing' && (
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground w-10">
-                Piano
-              </span>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={chordVolume}
-                onChange={e => setChordVolume(Number(e.target.value))}
-                className="w-24 accent-accent-teal"
-              />
-              <span className="text-[11px] text-muted-foreground w-7 tabular-nums">
-                {chordVolume}
-              </span>
-            </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-muted-foreground w-10">
+                  Piano
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={chordVolume}
+                  onChange={e => setChordVolume(Number(e.target.value))}
+                  className="w-24 accent-accent-teal"
+                />
+                <span className="text-[11px] text-muted-foreground w-7 tabular-nums">
+                  {chordVolume}
+                </span>
+              </div>
             )}
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-muted-foreground w-10">
