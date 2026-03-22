@@ -271,3 +271,51 @@ describe('Am pentatonic — frets 1-24 octave wrapping', () => {
     )
   })
 })
+
+// ─── A major pentatonic — major/minor 동일 범위 검증 ──────────────────────
+
+describe('isInCAGEDShapeRange — A major pentatonic (major/minor 동일 범위)', () => {
+  // CAGED 셰이프 범위는 major/minor 동일: A[0,3] G[2,5] E[5,8] D[7,10] C[9,13]
+  const root = 'A'
+
+  it('E shape: [5,8]', () => {
+    expect(isInCAGEDShapeRange(5, root, 'E')).toBe(true)
+    expect(isInCAGEDShapeRange(8, root, 'E')).toBe(true)
+    expect(isInCAGEDShapeRange(4, root, 'E')).toBe(false)
+    expect(isInCAGEDShapeRange(9, root, 'E')).toBe(false)
+  })
+
+  it('A shape: [0,3]', () => {
+    expect(isInCAGEDShapeRange(0, root, 'A')).toBe(true)
+    expect(isInCAGEDShapeRange(3, root, 'A')).toBe(true)
+    expect(isInCAGEDShapeRange(4, root, 'A')).toBe(false)
+  })
+
+  it('G shape: [2,5]', () => {
+    expect(isInCAGEDShapeRange(2, root, 'G')).toBe(true)
+    expect(isInCAGEDShapeRange(5, root, 'G')).toBe(true)
+    expect(isInCAGEDShapeRange(1, root, 'G')).toBe(false)
+    expect(isInCAGEDShapeRange(6, root, 'G')).toBe(false)
+  })
+
+  it('D shape: [7,10]', () => {
+    expect(isInCAGEDShapeRange(7, root, 'D')).toBe(true)
+    expect(isInCAGEDShapeRange(10, root, 'D')).toBe(true)
+    expect(isInCAGEDShapeRange(6, root, 'D')).toBe(false)
+    expect(isInCAGEDShapeRange(11, root, 'D')).toBe(false)
+  })
+
+  it('C shape: [9,13]', () => {
+    expect(isInCAGEDShapeRange(9, root, 'C')).toBe(true)
+    expect(isInCAGEDShapeRange(13, root, 'C')).toBe(true)
+    expect(isInCAGEDShapeRange(8, root, 'C')).toBe(false)
+    expect(isInCAGEDShapeRange(14, root, 'C')).toBe(false)
+  })
+
+  it('2nd octave: A shape [12,15]', () => {
+    expect(isInCAGEDShapeRange(12, root, 'A')).toBe(true)
+    expect(isInCAGEDShapeRange(15, root, 'A')).toBe(true)
+    expect(isInCAGEDShapeRange(11, root, 'A')).toBe(false)
+    expect(isInCAGEDShapeRange(16, root, 'A')).toBe(false)
+  })
+})

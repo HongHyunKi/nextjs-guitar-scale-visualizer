@@ -167,9 +167,12 @@ function shouldUseFlat(rootNote: string, isMinor: boolean): boolean {
 
 // Exported helper: determines flat/sharp notation for a root+scale combination.
 // Use this in rendering code to stay consistent with getScaleNotes.
+export function isMinorScale(scaleType: ScaleType): boolean {
+  return scaleType === 'minor' || scaleType === 'minor-pentatonic'
+}
+
 export function isScaleFlat(rootNote: string, scaleType: ScaleType): boolean {
-  const isMinor = scaleType === 'minor' || scaleType === 'minor-pentatonic'
-  return shouldUseFlat(rootNote, isMinor)
+  return shouldUseFlat(rootNote, isMinorScale(scaleType))
 }
 
 export function noteToSolfege(note: string, rootNote: string): string {

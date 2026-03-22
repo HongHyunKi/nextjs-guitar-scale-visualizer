@@ -64,10 +64,12 @@ const SHAPE_HIGH_OFFSET: Record<CAGEDShape, number> = {
 /**
  * 단일 Shape 선택 시 프렛이 해당 Shape 범위에 속하는지 확인
  *
- * 셰이프는 chord identity로 검색한다 — 정렬 인덱스 절대 사용 금지 (spec 3.3).
+ * 셰이프는 chord identity로 검색한다 — 정렬 인덱스 절대 사용 금지 (spec).
  *
- * Am 기준: A[0,3] G[2,5] E[5,8] D[7,10] C[9,13]
- * C 메이저 기준: C[0,4] A[3,6] G[5,8] E[8,11] D[10,13]
+ * CAGED 셰이프 범위는 major/minor 동일: G-form A코드와 G-form Am코드는 모두 fret 2.
+ * 범위 내에서 어떤 음이 켜지는지는 getScaleNotes(root, scaleType)가 결정한다.
+ *
+ * Am / A major 기준 (동일): A[0,3] G[2,5] E[5,8] D[7,10] C[9,13]
  */
 export function isInCAGEDShapeRange(
   fret: number,
@@ -77,7 +79,7 @@ export function isInCAGEDShapeRange(
   const rootIndex = getNoteIndex(rootNote)
   const sorted = getSortedBarres(rootIndex)
 
-  // 정체성 기반 검색 — 정렬 인덱스 절대 사용 금지 (spec 3.3)
+  // 정체성 기반 검색 — 정렬 인덱스 절대 사용 금지 (spec)
   const idx = sorted.findIndex(s => s.shape === shape)
   const nextIdx = (idx + 1) % sorted.length
 
@@ -86,8 +88,10 @@ export function isInCAGEDShapeRange(
   // highBase가 low 이하면 옥타브 wrap
   const high = highBase <= low ? highBase + 12 : highBase
 
-  // fret >= 12 가드: fret 0-11은 1st octave이므로 두 번째 조건(+12) 적용 안 함
   const f = fret % 12
+
+  // 고점 wrap-around (high>11) 또는 정상 범위
+  // fret >= 12 가드: 1st octave(0-11)가 wrap-around 높은 위치로 블리드 안 되게
   return (
     (f >= low && f <= high) || (fret >= 12 && f + 12 >= low && f + 12 <= high)
   )
