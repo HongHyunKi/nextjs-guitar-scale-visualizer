@@ -1,76 +1,111 @@
-# CAGED System — Architecture & Implementation Spec
+# CAGED 시스템 — 아키텍처 & 구현 스펙
 
-> This file is the authoritative reference for the CAGED system implementation.
-> Read it fully before modifying `lib/caged-utils.ts`, `components/caged-selector.tsx`, or related tests.
-
----
-
-## What Is CAGED
-
-The CAGED system maps 5 open chord shapes (C, A, G, E, D) across the fretboard.
-Each shape repeats every 12 frets. Together they tile the entire neck with no gaps.
-
-A shape is identified by its **chord identity** (which open chord it resembles), not by its position on the neck.
+> 이 파일은 CAGED 시스템 구현의 권위 있는 레퍼런스다.
+> `lib/caged-utils.ts`, `components/caged-selector.tsx`, 관련 테스트를 수정하기 전에 반드시 전체를 읽어라.
 
 ---
 
-## Barre Fret Calculation
+## CAGED란 무엇인가
 
-Each shape has a base note — the open-position root of that chord form:
+CAGED 시스템은 5개의 오픈 코드 셰이프(C, A, G, E, D)를 프렛보드 전체에 매핑한다.
+각 셰이프는 12프렛마다 반복된다. 5개를 합치면 전체 넥에 빈틈없이 채워진다.
 
-| Shape | Open root | Base index |
-| ----- | --------- | ---------- |
-| E     | E         | 4          |
-| A     | A         | 9          |
-| G     | G         | 7          |
-| D     | D         | 2          |
-| C     | C         | 0          |
-
-```
-barre = (rootIndex - baseNote + 12) % 12
-```
-
-### Reference: barre frets by root
-
-| Root  | C   | A   | G   | E   | D   |
-| ----- | --- | --- | --- | --- | --- |
-| C (0) | 0   | 3   | 5   | 8   | 10  |
-| G (7) | 7   | 10  | 0   | 3   | 5   |
-| A (9) | 9   | 0   | 2   | 5   | 7   |
+셰이프는 **넥에서의 위치**가 아닌 **코드 정체성**(어떤 오픈 코드를 닮았는지)으로 구분된다.
 
 ---
 
-## Shape Range Calculation
+## CAGED = "5 포지션" 시스템
 
-Each shape owns a fret range: from its own barre fret up to (but not including) the next shape's barre fret. Adjacent shapes overlap slightly (CAGED shared notes — intentional).
+많은 기타 교육 사이트에서 "5 positions" 또는 "pentatonic boxes"라고 부르는 것과 CAGED는 **동일한 개념**이다.
+
+| CAGED 셰이프 | 펜타토닉 포지션 번호 (Am 기준) | 비고                        |
+| ------------ | ------------------------------ | --------------------------- |
+| E shape      | Position 1                     | root이 6번 줄에 위치        |
+| D shape      | Position 2                     | root이 4번 줄에 위치        |
+| C shape      | Position 3                     | root이 5번 줄에 위치 (바레) |
+| A shape      | Position 4                     | root이 5번 줄에 위치 (오픈) |
+| G shape      | Position 5                     | root이 1번/6번 줄에 위치    |
+
+**CAGED 이름을 사용하는 이유:** 코드 셰이프와 스케일 포지션의 관계를 연결해서 이해하는 것이 기타 학습에 핵심적이다. Guitar Tricks, JustinGuitar, Fender Play 등 대부분의 기타 교육 사이트가 CAGED 이름을 사용한다.
+
+---
+
+## 메이저/마이너 스케일에 따른 CAGED 범위
+
+**CAGED 포지션 범위는 메이저/마이너가 동일하다.**
+
+같은 루트 노트 = 같은 바레 프렛 위치 = 같은 셰이프 범위.
+
+예시: Root A
+
+- A major E shape: [5, 8]
+- A minor E shape: [5, 8] ← 동일
+
+**메이저/마이너 차이는 "범위 안에서 어떤 음이 켜지는지"에만 있다.** 이 부분은 `getScaleNotes`가 처리한다.
+
+> 일부 기타 사이트가 major box와 minor box를 다른 프렛 범위로 표시하는 것은
+> "스케일 패턴의 시각적 시작점"을 다르게 잡기 때문이다 (minor는 root 위치에서, major는 1음 아래에서 시작).
+> 이는 CAGED 코드 셰이프 시스템과는 다른 시각이며, 이 프로젝트는 CAGED 코드 셰이프 시스템을 사용한다.
+
+---
+
+## 바레 프렛 계산
+
+각 셰이프는 기준 음(오픈 코드의 루트)을 갖는다:
+
+| 셰이프 | 오픈 루트 | 기준 인덱스 |
+| ------ | --------- | ----------- |
+| E      | E         | 4           |
+| A      | A         | 9           |
+| G      | G         | 7           |
+| D      | D         | 2           |
+| C      | C         | 0           |
 
 ```
-low      = barre + SHAPE_LOW_OFFSET[shape]     // currently 0 for all shapes
+바레 프렛 = (rootIndex - baseNote + 12) % 12
+```
+
+### 루트별 바레 프렛 레퍼런스
+
+| 루트  | C shape | A shape | G shape | E shape | D shape |
+| ----- | ------- | ------- | ------- | ------- | ------- |
+| C (0) | 0       | 3       | 5       | 8       | 10      |
+| G (7) | 7       | 10      | 0       | 3       | 5       |
+| A (9) | 9       | 0       | 2       | 5       | 7       |
+
+---
+
+## 셰이프 범위 계산
+
+각 셰이프는 자신의 바레 프렛부터 다음 셰이프의 바레 프렛 직전까지의 범위를 소유한다. 인접 셰이프는 약간 겹친다(CAGED 공유 음 — 의도된 동작).
+
+```
+low      = barre + SHAPE_LOW_OFFSET[shape]     // 현재 모든 셰이프 0
 highBase = next_barre + SHAPE_HIGH_OFFSET[shape]
-high     = highBase <= low ? highBase + 12 : highBase   // wrap-around guard
+high     = highBase <= low ? highBase + 12 : highBase   // wrap-around 가드
 ```
 
 ### SHAPE_HIGH_OFFSET
 
-The `high` boundary extends slightly past the next shape's barre to include notes shared between adjacent shapes:
+`high` 경계는 인접 셰이프 간 공유되는 음을 포함하기 위해 다음 셰이프의 바레보다 약간 더 확장된다:
 
-| Shape | offset | Notes                                            |
-| ----- | ------ | ------------------------------------------------ |
-| C     | +1     | C chord pattern extends one fret past next barre |
-| A     | +1     | same                                             |
-| G     | 0      | G chord pattern ends exactly at next barre       |
-| E     | +1     | same as C/A/D                                    |
-| D     | +1     | same                                             |
+| 셰이프 | offset | 비고                                    |
+| ------ | ------ | --------------------------------------- |
+| C      | +1     | C 코드 패턴은 다음 바레에서 1프렛 더    |
+| A      | +1     | 동일                                    |
+| G      | 0      | G 코드 패턴은 다음 바레에서 정확히 끝남 |
+| E      | +1     | C/A/D와 동일                            |
+| D      | +1     | 동일                                    |
 
-### Wrap-around
+### Wrap-around (옥타브 경계 처리)
 
-The last shape in sorted order has a `next` that wraps back to sorted[0], whose barre is smaller. When `highBase <= low`, add 12:
+정렬된 순서에서 마지막 셰이프의 `next`는 sorted[0]으로 되돌아가며, 이 barre가 더 작다. `highBase <= low`이면 12를 더한다:
 
 ```typescript
 const high = highBase <= low ? highBase + 12 : highBase
 ```
 
-### 2nd octave (frets ≥ 12)
+### 2번째 옥타브 (프렛 ≥ 12)
 
 ```typescript
 const f = fret % 12
@@ -79,108 +114,157 @@ return (
 )
 ```
 
-**Critical guard:** the `fret >= 12` condition on the second clause prevents open-string frets (0–11) from being pulled into high wrap-around positions. Without it, e.g. Am C shape [9,13]: fret 0 → f+12=12 ∈ [9,13] would incorrectly return true.
+**중요한 가드:** 두 번째 조건의 `fret >= 12`는 오픈 스트링 프렛(0-11)이 고위 wrap-around 위치로 잘못 포함되는 것을 방지한다.
 
 ---
 
-## Am Reference Table
+## 전체 루트 × 셰이프 레퍼런스 테이블
 
-Am sorted barres: A[0], G[2], E[5], D[7], C[9]
+이 표가 구현의 **정답 레퍼런스**다. 구현이 의심스러울 때 이 표를 기준으로 검증하라.
 
-| Shape | barre | range  | 2nd octave |
-| ----- | ----- | ------ | ---------- |
-| A     | 0     | [0, 3] | [12, 15]   |
-| G     | 2     | [2, 5] | [14, 17]   |
-| E     | 5     | [5, 8] | [17, 20]   |
-| D     | 7     | [7,10] | [19, 22]   |
-| C     | 9     | [9,13] | [21, 25]   |
+메이저/마이너 동일 — 루트만 동일하면 범위는 같다.
+
+| Root (인덱스) | C shape  | A shape  | G shape  | E shape  | D shape  |
+| ------------- | -------- | -------- | -------- | -------- | -------- |
+| C (0)         | [0, 4]   | [3, 6]   | [5, 8]   | [8, 11]  | [10, 13] |
+| C#/Db (1)     | [1, 5]   | [4, 7]   | [6, 9]   | [9, 12]  | [11, 14] |
+| D (2)         | [2, 6]   | [5, 8]   | [7, 10]  | [10, 13] | [0, 3]   |
+| D#/Eb (3)     | [3, 7]   | [6, 9]   | [8, 11]  | [11, 14] | [1, 4]   |
+| E (4)         | [4, 8]   | [7, 10]  | [9, 12]  | [0, 3]   | [2, 5]   |
+| F (5)         | [5, 9]   | [8, 11]  | [10, 13] | [1, 4]   | [3, 6]   |
+| F#/Gb (6)     | [6, 10]  | [9, 12]  | [11, 14] | [2, 5]   | [4, 7]   |
+| G (7)         | [7, 11]  | [10, 13] | [0, 3]   | [3, 6]   | [5, 8]   |
+| G#/Ab (8)     | [8, 12]  | [11, 14] | [1, 4]   | [4, 7]   | [6, 9]   |
+| A (9)         | [9, 13]  | [0, 3]   | [2, 5]   | [5, 8]   | [7, 10]  |
+| A#/Bb (10)    | [10, 14] | [1, 4]   | [3, 6]   | [6, 9]   | [8, 11]  |
+| B (11)        | [11, 15] | [2, 5]   | [4, 7]   | [7, 10]  | [9, 12]  |
+
+**2번째 옥타브:** 위 값에 각각 +12
+
+**Wrap-around 케이스 (범위가 0-11 경계를 넘는 경우):**
+
+- D (2) D shape: [0, 3]
+- E (4) E shape: [0, 3]
+- G (7) G shape: [0, 3]
 
 ---
 
-## Architecture Rules
+## Am 레퍼런스 테이블
 
-### The Golden Rule
+Am 정렬된 바레: A[0], G[2], E[5], D[7], C[9]
 
-**Shape labels must reflect chord identity, not sorted position.**
+| 셰이프 | 바레 | 1번째 옥타브 | 2번째 옥타브 |
+| ------ | ---- | ------------ | ------------ |
+| A      | 0    | [0, 3]       | [12, 15]     |
+| G      | 2    | [2, 5]       | [14, 17]     |
+| E      | 5    | [5, 8]       | [17, 20]     |
+| D      | 7    | [7, 10]      | [19, 22]     |
+| C      | 9    | [9, 13]      | [21, 25]     |
 
-`isInCAGEDShapeRange(fret, root, 'E')` must always find the E-shape region regardless of where E lands in the sorted barre order for a given root.
+---
 
-### Lookup pattern (correct)
+## 아키텍처 규칙
+
+### 황금 규칙
+
+**셰이프 레이블은 정렬 순서가 아닌 코드 정체성을 반영해야 한다.**
+
+`isInCAGEDShapeRange(fret, root, 'E')`는 어떤 루트에서도 E shape 영역을 찾아야 한다 (정렬 순서에서 E가 몇 번째인지와 무관).
+
+### 올바른 룩업 패턴
 
 ```typescript
 const idx = sorted.findIndex(s => s.shape === shape)
 ```
 
-### Anti-pattern (wrong — caused the positional labeling bug)
+### 금지 패턴 (위치 레이블링 버그의 원인)
 
 ```typescript
-// NEVER do this — maps fixed labels to fixed sorted positions
+// 절대 하지 말 것 — 고정 레이블을 고정 정렬 위치에 매핑
 const LABEL_TO_POSITION_IDX = { C: 0, A: 1, G: 2, E: 3, D: 4 }
-const positionIdx = LABEL_TO_POSITION_IDX[shape] // wrong for any root ≠ C
+const positionIdx = LABEL_TO_POSITION_IDX[shape] // C 루트 외 모든 루트에서 틀림
 ```
 
 ---
 
-## Bug History
+## 버그 기록
 
-### Positional Label Bug (fixed in commit `86d6ae1` area)
+### 위치 레이블 버그 (commit `86d6ae1` 부근에서 수정)
 
-**Symptom:** Selecting any shape showed the wrong fret region for all roots except C major.
+**증상:** 셰이프를 선택하면 C major를 제외한 모든 루트에서 잘못된 프렛 영역이 표시됨.
 
-**Root cause:** `POSITION_TO_LABEL` assigned labels C→A→G→E→D to sorted positions 0→4, regardless of which chord shape was actually at each position. `LABEL_TO_POSITION_IDX` reversed this — mapping labels back to fixed position indices.
+**원인:** `POSITION_TO_LABEL`이 정렬 위치 0→4에 레이블 C→A→G→E→D를 할당했고, `LABEL_TO_POSITION_IDX`가 이를 역으로 참조했다. 실제 어떤 셰이프가 각 위치에 있는지와 무관하게 고정 위치 인덱스를 사용했다.
 
-**Example (G major, select "E shape"):**
+**G major에서 "E shape" 선택 예시:**
 
 ```
-Sorted barres: G[0], E[3], D[5], C[7], A[10]
-Old code: LABEL_TO_POSITION_IDX['E'] = 3 → sorted[3] = {C, barre:7}
-Result: frets 7-10 highlighted  ← wrong (C shape region)
-Expected: frets 3-6 highlighted ← E shape region
+정렬된 바레: G[0], E[3], D[5], C[7], A[10]
+구버전 코드: LABEL_TO_POSITION_IDX['E'] = 3 → sorted[3] = {C, barre:7}
+결과: 프렛 7-10 하이라이트  ← 틀림 (C shape 영역)
+기대: 프렛 3-6 하이라이트  ← E shape 영역
 ```
 
-**Fix:** removed both lookup tables; replaced with `findIndex` by shape identity.
+**수정:** 두 룩업 테이블 제거, `findIndex`로 셰이프 정체성 기반 검색으로 교체.
 
-**Scope:** C major worked by coincidence (sorted order happens to be C→A→G→E→D). All other 11 roots were broken.
+**범위:** C major만 우연히 동작했음 (정렬 순서가 C→A→G→E→D와 일치). 나머지 11개 루트 모두 버그 있었음.
 
 ---
 
-## File Map
+### Octave Wrapping 테스트 레이블 버그 (테스트 수정으로 해결)
 
-| File                            | Responsibility                                                   |
-| ------------------------------- | ---------------------------------------------------------------- |
-| `lib/caged-utils.ts`            | Barre calculation, range membership — single source of truth     |
-| `components/caged-selector.tsx` | UI: C / A / G / E / D / All toggle                               |
-| `components/fretboard.tsx`      | Calls `isInCAGEDShapeRange` to decide highlight per fret         |
-| `test/caged-utils.test.ts`      | Unit tests: Am + C major full range, octave wrapping, regression |
+**증상:** `test/caged-utils.test.ts`의 "Am pentatonic — frets 1-24 octave wrapping" 섹션에서 33개 테스트 실패.
+
+**원인:** 테스트의 셰이프 레이블이 CAGED 순서로 한 칸씩 밀려 있었다. 위치 레이블 버그 수정 전의 구버전 동작(잘못된 동작)을 기대값으로 갖고 있었다. **구현은 정확했고 테스트가 틀렸다.**
+
+| 테스트 레이블 (잘못됨) | 올바른 레이블  | Am 범위        |
+| ---------------------- | -------------- | -------------- |
+| C shape [0,3]          | A shape [0,3]  | A shape의 범위 |
+| A shape [2,5]          | G shape [2,5]  | G shape의 범위 |
+| G shape [5,8]          | E shape [5,8]  | E shape의 범위 |
+| E shape [7,10]         | D shape [7,10] | D shape의 범위 |
+| D shape [9,13]         | C shape [9,13] | C shape의 범위 |
+
+**수정:** "Am pentatonic octave wrapping" 섹션을 올바른 셰이프 레이블로 재작성.
 
 ---
 
-## Test Requirements
+## 파일 맵
 
-A CAGED implementation is only considered correct when all of the following pass:
+| 파일                            | 역할                                                          |
+| ------------------------------- | ------------------------------------------------------------- |
+| `lib/caged-utils.ts`            | 바레 계산, 범위 포함 여부 — 단일 진실 소스                    |
+| `components/caged-selector.tsx` | UI: C / A / G / E / D / All 토글                              |
+| `components/fretboard.tsx`      | 프렛별 하이라이트 여부 결정을 위해 `isInCAGEDShapeRange` 호출 |
+| `test/caged-utils.test.ts`      | 단위 테스트: Am + C major 전체 범위, 옥타브 랩핑, 회귀 테스트 |
 
-**1. Shape identity is preserved across roots**
+---
 
-- Selecting "E shape" on G major → frets 3–6 highlighted (E barre at 3)
-- Selecting "E shape" on Am → frets 5–8 highlighted (E barre at 5)
+## 테스트 요구사항
 
-**2. Range boundaries are exact**
+구현이 올바른 것으로 간주되려면 다음을 모두 통과해야 한다:
 
-- Boundary frets (low and high) are IN range
-- low-1 and high+1 are NOT in range
+**1. 루트에 상관없이 셰이프 정체성 유지**
 
-**3. 2nd octave wrapping is correct**
+- G major에서 "E shape" 선택 → 프렛 3-6 하이라이트 (E 바레 위치 3)
+- Am에서 "E shape" 선택 → 프렛 5-8 하이라이트 (E 바레 위치 5)
 
-- shape[low,high] → 2nd octave [low+12, high+12]
-- frets 0–11 must NOT bleed into wrap-around high positions
+**2. 범위 경계가 정확함**
 
-**4. Adjacent shape overlap is intentional**
+- 경계 프렛(low, high)은 범위 IN
+- low-1과 high+1은 범위 NOT IN
 
-- G and E shapes for Am both include fret 5 (shared CAGED transition note) — this is correct, not a bug
+**3. 2번째 옥타브 랩핑이 정확함**
 
-**Recommended roots to test:**
+- shape[low, high] → 2번째 옥타브 [low+12, high+12]
+- 프렛 0-11은 wrap-around 높은 위치로 블리드되면 안 됨
 
-- C major (canonical — sorted order matches shape order)
-- G major (sorted order is G→E→D→C→A, non-standard)
-- Am (sorted order is A→G→E→D→C)
-- D# minor (verifies no shape region overlap or misassignment on a sharp root)
+**4. 인접 셰이프 겹침은 의도된 동작**
+
+- Am에서 G shape와 E shape 모두 프렛 5를 포함함 (CAGED 전환 음) — 버그가 아님
+
+**추천 테스트 루트:**
+
+- C major (정규 — 정렬 순서가 셰이프 순서와 일치)
+- G major (정렬 순서 G→E→D→C→A, 비표준)
+- Am (정렬 순서 A→G→E→D→C)
+- D# minor (sharp 루트에서 셰이프 영역 겹침/오할당 없음 검증)

@@ -196,77 +196,62 @@ describe('Am pentatonic — frets 1-24 octave wrapping', () => {
   // 2nd octave: A[12,15] G[14,17] E[17,20] D[19,22] C[21,25]
   const root = 'A'
 
-  describe('C shape [0,3] → 2nd octave [12,15]', () => {
-    it.each([1, 2, 3])('fret %i ∈ C shape (1st octave)', fret =>
-      expect(isInCAGEDShapeRange(fret, root, 'C')).toBe(true)
-    )
-    it.each([4, 5, 11])('fret %i ∉ C shape', fret =>
-      expect(isInCAGEDShapeRange(fret, root, 'C')).toBe(false)
-    )
-    it.each([12, 13, 14, 15])('fret %i ∈ C shape (2nd octave)', fret =>
-      expect(isInCAGEDShapeRange(fret, root, 'C')).toBe(true)
-    )
-    it.each([16, 17])('fret %i ∉ C shape (2nd octave)', fret =>
-      expect(isInCAGEDShapeRange(fret, root, 'C')).toBe(false)
-    )
-  })
-
-  describe('A shape [2,5] → 2nd octave [14,17]', () => {
-    it.each([2, 3, 4, 5])('fret %i ∈ A shape (1st octave)', fret =>
+  describe('A shape [0,3] → 2nd octave [12,15]', () => {
+    it.each([0, 1, 2, 3])('fret %i ∈ A shape (1st octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'A')).toBe(true)
     )
-    it.each([1, 6])('fret %i ∉ A shape', fret =>
+    it.each([4, 5])('fret %i ∉ A shape', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'A')).toBe(false)
     )
-    it.each([14, 15, 16, 17])('fret %i ∈ A shape (2nd octave)', fret =>
+    it.each([12, 13, 14, 15])('fret %i ∈ A shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'A')).toBe(true)
     )
-    it.each([13, 18])('fret %i ∉ A shape (2nd octave)', fret =>
+    it.each([11, 16])('fret %i ∉ A shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'A')).toBe(false)
     )
   })
 
-  describe('G shape [5,8] → 2nd octave [17,20]', () => {
-    it.each([5, 6, 7, 8])('fret %i ∈ G shape (1st octave)', fret =>
+  describe('G shape [2,5] → 2nd octave [14,17]', () => {
+    it.each([2, 3, 4, 5])('fret %i ∈ G shape (1st octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'G')).toBe(true)
     )
-    it.each([4, 9])('fret %i ∉ G shape', fret =>
+    it.each([1, 6])('fret %i ∉ G shape', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'G')).toBe(false)
     )
-    it.each([17, 18, 19, 20])('fret %i ∈ G shape (2nd octave)', fret =>
+    it.each([14, 15, 16, 17])('fret %i ∈ G shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'G')).toBe(true)
     )
-    it.each([16, 21])('fret %i ∉ G shape (2nd octave)', fret =>
+    it.each([13, 18])('fret %i ∉ G shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'G')).toBe(false)
     )
   })
 
-  describe('E shape [7,10] → 2nd octave [19,22]', () => {
-    it.each([7, 8, 9, 10])('fret %i ∈ E shape (1st octave)', fret =>
+  describe('E shape [5,8] → 2nd octave [17,20]', () => {
+    it.each([5, 6, 7, 8])('fret %i ∈ E shape (1st octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'E')).toBe(true)
     )
-    it.each([6, 11])('fret %i ∉ E shape', fret =>
+    it.each([4, 9])('fret %i ∉ E shape', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'E')).toBe(false)
     )
-    it.each([19, 20, 21, 22])('fret %i ∈ E shape (2nd octave)', fret =>
+    it.each([17, 18, 19, 20])('fret %i ∈ E shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'E')).toBe(true)
     )
-    it.each([18, 23])('fret %i ∉ E shape (2nd octave)', fret =>
+    it.each([16, 21])('fret %i ∉ E shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'E')).toBe(false)
     )
   })
 
-  describe('D shape [9,13] → 2nd octave [21,25]', () => {
-    it.each([9, 10, 11, 12, 13])('fret %i ∈ D shape (1st octave)', fret =>
+  describe('D shape [7,10] → 2nd octave [19,22]', () => {
+    it.each([7, 8, 9, 10])('fret %i ∈ D shape (1st octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'D')).toBe(true)
     )
-    it.each([8, 14])('fret %i ∉ D shape', fret =>
+    it.each([6, 11])('fret %i ∉ D shape', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'D')).toBe(false)
     )
-    it.each([21, 22, 23, 24])('fret %i ∈ D shape (2nd octave)', fret =>
+    it.each([19, 20, 21, 22])('fret %i ∈ D shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'D')).toBe(true)
     )
-    it.each([20])('fret %i ∉ D shape (2nd octave)', fret =>
+    it.each([18, 23])('fret %i ∉ D shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'D')).toBe(false)
     )
   })
@@ -278,10 +263,10 @@ describe('Am pentatonic — frets 1-24 octave wrapping', () => {
     it.each([8, 14])('fret %i ∉ C shape', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'C')).toBe(false)
     )
-    it.each([21, 22, 23, 24])('fret %i ∈ C shape (2nd octave)', fret =>
+    it.each([21, 22, 23, 24, 25])('fret %i ∈ C shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'C')).toBe(true)
     )
-    it.each([20])('fret %i ∉ C shape (2nd octave)', fret =>
+    it.each([20, 26])('fret %i ∉ C shape (2nd octave)', fret =>
       expect(isInCAGEDShapeRange(fret, root, 'C')).toBe(false)
     )
   })
