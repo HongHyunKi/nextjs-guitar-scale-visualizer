@@ -9,22 +9,26 @@
 ## 주요 기능
 
 ### 🎸 프렛보드 시각화
+
 - 실제 기타 프렛보드와 동일한 레이아웃으로 스케일 표시
 - 5~24개 프렛까지 조절 가능
 - 반응형 디자인으로 모바일 환경에서도 최적화
 
 ### 🎵 현재 지원하는 스케일
+
 - **메이저 스케일** (Major Scale)
 - **마이너 스케일** (Minor Scale)
 - **메이저 펜타토닉** (Major Pentatonic)
 - **마이너 펜타토닉** (Minor Pentatonic)
 
 ### 🎼 표기법
+
 - **알파벳 표기** (C, D, E, F, G, A, B)
 - **계이름 표기** (도, 레, 미, 파, 솔, 라, 시)
 - **인터벌 표기** (1, 2, 3, 4, 5, 6, 7)
 
 ### 🎹 루트 노트 선택
+
 - 12개 음계 모두 선택 가능 (C, C♯/D♭, D, D♯/E♭, E, F, F♯/G♭, G, G♯/A♭, A, A♯/B♭, B)
 - 선택한 표기법에 따라 자동으로 표시 전환
 
@@ -64,24 +68,6 @@ pnpm build
 
 ```bash
 pnpm start
-```
-
-## 프로젝트 구조
-
-```
-├── app/                    # Next.js App Router
-│   ├── page.tsx           # 메인 페이지
-│   ├── layout.tsx         # 루트 레이아웃
-│   └── globals.css        # 글로벌 스타일
-├── components/            # React 컴포넌트
-│   ├── fretboard.tsx      # 프렛보드 컴포넌트
-│   ├── root-note-selector.tsx
-│   ├── scale-selector.tsx
-│   ├── notation-toggle.tsx
-│   └── ui/                # UI 기본 컴포넌트
-├── lib/                   # 유틸리티 함수
-│   └── music-utils.ts     # 음악 이론 관련 함수
-└── public/                # 정적 파일
 ```
 
 ## 사용 방법

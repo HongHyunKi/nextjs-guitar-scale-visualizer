@@ -12,8 +12,18 @@ import {
 describe('getNoteIndex', () => {
   it('returns 0–11 for sharp notes', () => {
     const expected: [string, number][] = [
-      ['C', 0], ['C#', 1], ['D', 2], ['D#', 3], ['E', 4],
-      ['F', 5], ['F#', 6], ['G', 7], ['G#', 8], ['A', 9], ['A#', 10], ['B', 11],
+      ['C', 0],
+      ['C#', 1],
+      ['D', 2],
+      ['D#', 3],
+      ['E', 4],
+      ['F', 5],
+      ['F#', 6],
+      ['G', 7],
+      ['G#', 8],
+      ['A', 9],
+      ['A#', 10],
+      ['B', 11],
     ]
     expected.forEach(([note, idx]) => {
       expect(getNoteIndex(note)).toBe(idx)
@@ -22,7 +32,11 @@ describe('getNoteIndex', () => {
 
   it('resolves flat enharmonics to same index as sharps', () => {
     const pairs: [string, string][] = [
-      ['Db', 'C#'], ['Eb', 'D#'], ['Gb', 'F#'], ['Ab', 'G#'], ['Bb', 'A#'],
+      ['Db', 'C#'],
+      ['Eb', 'D#'],
+      ['Gb', 'F#'],
+      ['Ab', 'G#'],
+      ['Bb', 'A#'],
     ]
     pairs.forEach(([flat, sharp]) => {
       expect(getNoteIndex(flat)).toBe(getNoteIndex(sharp))
@@ -69,23 +83,47 @@ describe('getNoteFromFret', () => {
 // ─── getScaleNotes ───────────────────────────────────────────────────────────
 
 const ALL_ROOTS = [
-  'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
+  'C',
+  'C#',
+  'Db',
+  'D',
+  'D#',
+  'Eb',
+  'E',
+  'F',
+  'F#',
+  'Gb',
+  'G',
+  'G#',
+  'Ab',
+  'A',
+  'A#',
+  'Bb',
+  'B',
 ]
 
 const SCALE_INTERVALS: Record<ScaleType, number[]> = {
-  'major':            [0, 2, 4, 5, 7, 9, 11],
-  'minor':            [0, 2, 3, 5, 7, 8, 10],
+  major: [0, 2, 4, 5, 7, 9, 11],
+  minor: [0, 2, 3, 5, 7, 8, 10],
   'major-pentatonic': [0, 2, 4, 7, 9],
   'minor-pentatonic': [0, 3, 5, 7, 10],
 }
 
 const SCALE_NOTE_COUNT: Record<ScaleType, number> = {
-  'major': 7, 'minor': 7, 'major-pentatonic': 5, 'minor-pentatonic': 5,
+  major: 7,
+  minor: 7,
+  'major-pentatonic': 5,
+  'minor-pentatonic': 5,
 }
 
 describe('getScaleNotes', () => {
   describe('note count', () => {
-    const scaleTypes: ScaleType[] = ['major', 'minor', 'major-pentatonic', 'minor-pentatonic']
+    const scaleTypes: ScaleType[] = [
+      'major',
+      'minor',
+      'major-pentatonic',
+      'minor-pentatonic',
+    ]
     scaleTypes.forEach(scaleType => {
       it(`${scaleType} always returns ${SCALE_NOTE_COUNT[scaleType]} notes`, () => {
         ALL_ROOTS.forEach(root => {
@@ -97,7 +135,12 @@ describe('getScaleNotes', () => {
   })
 
   describe('root note is first element', () => {
-    const scaleTypes: ScaleType[] = ['major', 'minor', 'major-pentatonic', 'minor-pentatonic']
+    const scaleTypes: ScaleType[] = [
+      'major',
+      'minor',
+      'major-pentatonic',
+      'minor-pentatonic',
+    ]
     scaleTypes.forEach(scaleType => {
       it(`${scaleType}: first note matches root`, () => {
         ALL_ROOTS.forEach(root => {
@@ -109,7 +152,12 @@ describe('getScaleNotes', () => {
   })
 
   describe('sharp/flat consistency (no mixing within a scale)', () => {
-    const scaleTypes: ScaleType[] = ['major', 'minor', 'major-pentatonic', 'minor-pentatonic']
+    const scaleTypes: ScaleType[] = [
+      'major',
+      'minor',
+      'major-pentatonic',
+      'minor-pentatonic',
+    ]
     scaleTypes.forEach(scaleType => {
       it(`${scaleType}: no scale mixes sharps and flats`, () => {
         ALL_ROOTS.forEach(root => {
@@ -123,7 +171,12 @@ describe('getScaleNotes', () => {
   })
 
   describe('chromatic index correctness — all 12 roots × 4 scales', () => {
-    const scaleTypes: ScaleType[] = ['major', 'minor', 'major-pentatonic', 'minor-pentatonic']
+    const scaleTypes: ScaleType[] = [
+      'major',
+      'minor',
+      'major-pentatonic',
+      'minor-pentatonic',
+    ]
     scaleTypes.forEach(scaleType => {
       it(`${scaleType}: all notes at correct chromatic index`, () => {
         ALL_ROOTS.forEach(root => {
@@ -142,47 +195,120 @@ describe('getScaleNotes', () => {
 
   describe('reference values from CLAUDE.md', () => {
     it('C major-pentatonic: C D E G A', () => {
-      expect(getScaleNotes('C', 'major-pentatonic')).toEqual(['C', 'D', 'E', 'G', 'A'])
+      expect(getScaleNotes('C', 'major-pentatonic')).toEqual([
+        'C',
+        'D',
+        'E',
+        'G',
+        'A',
+      ])
     })
 
     it('C# major-pentatonic: C# D# F G# A#', () => {
-      expect(getScaleNotes('C#', 'major-pentatonic')).toEqual(['C#', 'D#', 'F', 'G#', 'A#'])
+      expect(getScaleNotes('C#', 'major-pentatonic')).toEqual([
+        'C#',
+        'D#',
+        'F',
+        'G#',
+        'A#',
+      ])
     })
 
     it('Db major-pentatonic: Db Eb F Ab Bb', () => {
-      expect(getScaleNotes('Db', 'major-pentatonic')).toEqual(['Db', 'Eb', 'F', 'Ab', 'Bb'])
+      expect(getScaleNotes('Db', 'major-pentatonic')).toEqual([
+        'Db',
+        'Eb',
+        'F',
+        'Ab',
+        'Bb',
+      ])
     })
 
     it('D# minor-pentatonic: D# F# G# A# C# (known bug regression)', () => {
-      expect(getScaleNotes('D#', 'minor-pentatonic')).toEqual(['D#', 'F#', 'G#', 'A#', 'C#'])
+      expect(getScaleNotes('D#', 'minor-pentatonic')).toEqual([
+        'D#',
+        'F#',
+        'G#',
+        'A#',
+        'C#',
+      ])
     })
 
     it('C major: C D E F G A B', () => {
-      expect(getScaleNotes('C', 'major')).toEqual(['C', 'D', 'E', 'F', 'G', 'A', 'B'])
+      expect(getScaleNotes('C', 'major')).toEqual([
+        'C',
+        'D',
+        'E',
+        'F',
+        'G',
+        'A',
+        'B',
+      ])
     })
 
     it('A minor: A B C D E F G', () => {
-      expect(getScaleNotes('A', 'minor')).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'G'])
+      expect(getScaleNotes('A', 'minor')).toEqual([
+        'A',
+        'B',
+        'C',
+        'D',
+        'E',
+        'F',
+        'G',
+      ])
     })
 
     it('G major: G A B C D E F#', () => {
-      expect(getScaleNotes('G', 'major')).toEqual(['G', 'A', 'B', 'C', 'D', 'E', 'F#'])
+      expect(getScaleNotes('G', 'major')).toEqual([
+        'G',
+        'A',
+        'B',
+        'C',
+        'D',
+        'E',
+        'F#',
+      ])
     })
 
     it('F major: F G A Bb C D E', () => {
-      expect(getScaleNotes('F', 'major')).toEqual(['F', 'G', 'A', 'Bb', 'C', 'D', 'E'])
+      expect(getScaleNotes('F', 'major')).toEqual([
+        'F',
+        'G',
+        'A',
+        'Bb',
+        'C',
+        'D',
+        'E',
+      ])
     })
 
     it('Bb major: Bb C D Eb F G A', () => {
-      expect(getScaleNotes('Bb', 'major')).toEqual(['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'])
+      expect(getScaleNotes('Bb', 'major')).toEqual([
+        'Bb',
+        'C',
+        'D',
+        'Eb',
+        'F',
+        'G',
+        'A',
+      ])
     })
   })
 
   describe('enharmonic pair equivalence', () => {
     const pairs: [string, string][] = [
-      ['C#', 'Db'], ['D#', 'Eb'], ['F#', 'Gb'], ['G#', 'Ab'], ['A#', 'Bb'],
+      ['C#', 'Db'],
+      ['D#', 'Eb'],
+      ['F#', 'Gb'],
+      ['G#', 'Ab'],
+      ['A#', 'Bb'],
     ]
-    const scaleTypes: ScaleType[] = ['major', 'minor', 'major-pentatonic', 'minor-pentatonic']
+    const scaleTypes: ScaleType[] = [
+      'major',
+      'minor',
+      'major-pentatonic',
+      'minor-pentatonic',
+    ]
 
     pairs.forEach(([sharp, flat]) => {
       scaleTypes.forEach(scaleType => {
@@ -190,7 +316,9 @@ describe('getScaleNotes', () => {
           const sharpNotes = getScaleNotes(sharp, scaleType)
           const flatNotes = getScaleNotes(flat, scaleType)
           // Same chromatic content, different spelling
-          expect(sharpNotes.map(getNoteIndex)).toEqual(flatNotes.map(getNoteIndex))
+          expect(sharpNotes.map(getNoteIndex)).toEqual(
+            flatNotes.map(getNoteIndex)
+          )
           // Sharp root uses sharps, flat root uses flats
           expect(sharpNotes.every(n => !n.includes('b'))).toBe(true)
           expect(flatNotes.every(n => !n.includes('#'))).toBe(true)

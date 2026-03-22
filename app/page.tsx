@@ -5,8 +5,8 @@ import { Fretboard } from '@/components/fretboard'
 import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
-import { CAGEDSelector } from '@/components/caged-selector'
 import { FretControl } from '@/components/fret-control'
+import { BackingTrackPlayer } from '@/components/backing-track-player'
 import { Music } from 'lucide-react'
 import {
   ScaleType,
@@ -20,6 +20,7 @@ export default function Page() {
   const [notationType, setNotationType] = useState<NotationType>('alphabetical')
   const [rootNote, setRootNote] = useState('C')
   const [scaleType, setScaleType] = useState<ScaleType>('major')
+  const [startFret, setStartFret] = useState(0)
   const [frets, setFrets] = useState(15)
   const [cagedEnabled, setCagedEnabled] = useState(false)
   const [selectedCAGEDShape, setSelectedCAGEDShape] =
@@ -114,13 +115,30 @@ export default function Page() {
 
               <div className="w-full max-w-xs">
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Frets
+                  Start Fret
                 </label>
-                <FretControl value={frets} onChange={setFrets} />
+                <FretControl
+                  value={startFret}
+                  onChange={setStartFret}
+                  min={0}
+                  max={frets - 3}
+                />
+              </div>
+              <div className="w-full max-w-xs">
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  End Fret
+                </label>
+                <FretControl
+                  value={frets}
+                  onChange={setFrets}
+                  min={startFret + 3}
+                  max={24}
+                />
               </div>
             </div>
 
-            <div>
+            {/* TODO CAGED */}
+            {/* <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 CAGED System
               </label>
@@ -130,9 +148,12 @@ export default function Page() {
                 selectedShape={selectedCAGEDShape}
                 onShapeChange={setSelectedCAGEDShape}
               />
-            </div>
+            </div> */}
           </div>
         </div>
+
+        {/* Backing Track Player */}
+        <BackingTrackPlayer rootNote={rootNote} scaleType={scaleType} />
 
         {/* Fretboard */}
         <div className="relative">
@@ -141,6 +162,7 @@ export default function Page() {
               rootNote={rootNote}
               scaleType={scaleType}
               notationType={notationType}
+              startFret={startFret}
               frets={frets}
               cagedEnabled={cagedEnabled}
               selectedCAGEDShape={selectedCAGEDShape}

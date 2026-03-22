@@ -41,43 +41,98 @@ const FIXED_SOLFEGE_MAP: Record<string, string> = {
 // Interval notation mapping (scale degrees)
 const INTERVAL_MAP: Record<number, string> = {
   0: '1',
-  1: 'b2',
+  1: '♭2',
   2: '2',
-  3: 'b3',
+  3: '♭3',
   4: '3',
   5: '4',
-  6: 'b5',
+  6: '♭5',
   7: '5',
-  8: 'b6',
+  8: '♭6',
   9: '6',
-  10: 'b7',
+  10: '♭7',
   11: '7',
 }
 
 // Scale type definition
-export type ScaleType = 'major' | 'minor' | 'major-pentatonic' | 'minor-pentatonic'
+export type ScaleType =
+  | 'major'
+  | 'minor'
+  | 'major-pentatonic'
+  | 'minor-pentatonic'
 
 // Scale type labels
 export const SCALE_LABELS: Record<ScaleType, string> = {
-  'major': 'Major Scale',
-  'minor': 'Minor Scale',
+  major: 'Major Scale',
+  minor: 'Minor Scale',
   'major-pentatonic': 'Major Pentatonic',
   'minor-pentatonic': 'Minor Pentatonic',
 }
 
 // All notes in chromatic order (sharp notation) — canonical reference
-export const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+export const CHROMATIC_NOTES = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B',
+]
+
+// Chromatic notes with enharmonic flat equivalents for root note selection
+export const CHROMATIC_NOTES_WITH_ENHARMONICS = [
+  'C',
+  'C#',
+  'Db',
+  'D',
+  'D#',
+  'Eb',
+  'E',
+  'F',
+  'F#',
+  'Gb',
+  'G',
+  'G#',
+  'Ab',
+  'A',
+  'A#',
+  'Bb',
+  'B',
+]
 
 // Flat-to-sharp enharmonic mapping
 const FLAT_TO_SHARP: Record<string, string> = {
-  Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#',
+  Db: 'C#',
+  Eb: 'D#',
+  Gb: 'F#',
+  Ab: 'G#',
+  Bb: 'A#',
 }
 
 // All notes in chromatic order (sharp notation)
 const NOTES_SHARP = CHROMATIC_NOTES
 
 // All notes in chromatic order (flat notation)
-const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+const NOTES_FLAT = [
+  'C',
+  'Db',
+  'D',
+  'Eb',
+  'E',
+  'F',
+  'Gb',
+  'G',
+  'Ab',
+  'A',
+  'Bb',
+  'B',
+]
 
 // Major scale intervals (W-W-H-W-W-W-H) - 1, 2, 3, 4, 5, 6, 7
 const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11]
@@ -103,9 +158,11 @@ const MAJOR_FLAT_ROOTS = new Set(['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'])
 const MINOR_FLAT_ROOTS = new Set(['D', 'G', 'C', 'F', 'Bb', 'Eb', 'Ab'])
 
 function shouldUseFlat(rootNote: string, isMinor: boolean): boolean {
-  if (rootNote.includes('b')) return true   // flat root → flat spelling
-  if (rootNote.includes('#')) return false  // sharp root → sharp spelling
-  return isMinor ? MINOR_FLAT_ROOTS.has(rootNote) : MAJOR_FLAT_ROOTS.has(rootNote)
+  if (rootNote.includes('b')) return true // flat root → flat spelling
+  if (rootNote.includes('#')) return false // sharp root → sharp spelling
+  return isMinor
+    ? MINOR_FLAT_ROOTS.has(rootNote)
+    : MAJOR_FLAT_ROOTS.has(rootNote)
 }
 
 // Exported helper: determines flat/sharp notation for a root+scale combination.
@@ -143,11 +200,25 @@ export function getScaleNotes(
   let isMinor: boolean
 
   switch (scaleType) {
-    case 'major':            intervals = MAJOR_INTERVALS;            isMinor = false; break
-    case 'minor':            intervals = MINOR_INTERVALS;            isMinor = true;  break
-    case 'major-pentatonic': intervals = MAJOR_PENTATONIC_INTERVALS; isMinor = false; break
-    case 'minor-pentatonic': intervals = MINOR_PENTATONIC_INTERVALS; isMinor = true;  break
-    default:                 intervals = MAJOR_INTERVALS;            isMinor = false;
+    case 'major':
+      intervals = MAJOR_INTERVALS
+      isMinor = false
+      break
+    case 'minor':
+      intervals = MINOR_INTERVALS
+      isMinor = true
+      break
+    case 'major-pentatonic':
+      intervals = MAJOR_PENTATONIC_INTERVALS
+      isMinor = false
+      break
+    case 'minor-pentatonic':
+      intervals = MINOR_PENTATONIC_INTERVALS
+      isMinor = true
+      break
+    default:
+      intervals = MAJOR_INTERVALS
+      isMinor = false
   }
 
   const notesArray = shouldUseFlat(rootNote, isMinor) ? NOTES_FLAT : NOTES_SHARP
