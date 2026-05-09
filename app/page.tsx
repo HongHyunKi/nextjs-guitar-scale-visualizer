@@ -48,6 +48,24 @@ export default function Page() {
           </div>
         </div>
 
+        {/* Fretboard */}
+        <div className="relative">
+          <div className="bg-card border border-border rounded-xl p-6 pr-0 xl:pr-6 overflow-x-auto overflow-y-visible custom-scrollbar">
+            <Fretboard
+              rootNote={rootNote}
+              scaleType={scaleType}
+              notationType={notationType}
+              startFret={startFret}
+              frets={frets}
+              cagedEnabled={cagedEnabled}
+              selectedCAGEDShape={selectedCAGEDShape}
+            />
+          </div>
+
+          {/* Scroll indicator */}
+          <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-accent-teal/60 via-accent-teal/80 to-accent-teal/60 pointer-events-none opacity-70 xl:opacity-0 rounded-r-xl shadow-lg shadow-accent-teal/50"></div>
+        </div>
+
         {/* Controls */}
         <div className="p-6 bg-card border border-border rounded-xl space-y-6">
           {/* Scale 섹션 */}
@@ -154,24 +172,6 @@ export default function Page() {
 
         {/* Backing Track Player */}
         <BackingTrackPlayer rootNote={rootNote} scaleType={scaleType} />
-
-        {/* Fretboard */}
-        <div className="relative">
-          <div className="bg-card border border-border rounded-xl p-6 pr-0 xl:pr-6 overflow-x-auto overflow-y-visible custom-scrollbar">
-            <Fretboard
-              rootNote={rootNote}
-              scaleType={scaleType}
-              notationType={notationType}
-              startFret={startFret}
-              frets={frets}
-              cagedEnabled={cagedEnabled}
-              selectedCAGEDShape={selectedCAGEDShape}
-            />
-          </div>
-
-          {/* Scroll indicator */}
-          <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-accent-teal/60 via-accent-teal/80 to-accent-teal/60 pointer-events-none opacity-70 xl:opacity-0 rounded-r-xl shadow-lg shadow-accent-teal/50"></div>
-        </div>
       </div>
     </div>
   )
