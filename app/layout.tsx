@@ -9,9 +9,9 @@ const _geist = Geist({ subsets: ['latin'] })
 const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Guitar Scale Visualizer',
-  description:
-    'Interactive fretboard for learning guitar scales with notation switching',
+  metadataBase: new URL('https://nextjs-guitar-scale-visualizer.vercel.app'),
+  title: 'ScaleUp | 일렉기타 지판 스케일 및 릭 연습 독학 도우미',
+  description: '방구석 기타리스트를 위한 스케일 시각화',
   generator: 'dev.hyunki',
   icons: {
     icon: [
@@ -22,6 +22,22 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
+  openGraph: {
+    title: 'ScaleUp | 일렉기타 지판 스케일 및 릭 연습 독학 도우미',
+    description: '방구석 기타리스트를 위한 스케일 시각화',
+    type: 'website',
+    locale: 'ko_KR',
+    siteName: 'Guitar ScaleUp',
+    // TODO: OG 이미지 추가 시 (권장 1200x630)
+    // images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Guitar ScaleUp' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ScaleUp | 일렉기타 지판 스케일 및 릭 연습 독학 도우미',
+    description: '방구석 기타리스트를 위한 스케일 시각화',
+    // TODO: Twitter 카드 이미지 추가 시
+    // images: ['/og-image.png'],
+  },
 }
 
 export default function RootLayout({
@@ -30,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="ko" className="dark">
       <body className={`font-sans antialiased`}>
         {children}
         <Footer />

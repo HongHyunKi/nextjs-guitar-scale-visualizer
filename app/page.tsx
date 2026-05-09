@@ -39,10 +39,10 @@ export default function Page() {
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-balance">
-                Guitar Scale Visualizer
+                Guitar ScaleUp
               </h1>
               <p className="text-muted-foreground text-sm">
-                Interactive fretboard for learning scales
+                방구석 기타리스트를 위한 스케일 시각화
               </p>
             </div>
           </div>

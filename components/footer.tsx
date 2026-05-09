@@ -6,8 +6,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto py-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Guitar Scale Visualizer. All rights
-            reserved.
+            © {new Date().getFullYear()} Guitar ScaleUp. All rights reserved.
           </div>
 
           <div className="flex items-center gap-4">

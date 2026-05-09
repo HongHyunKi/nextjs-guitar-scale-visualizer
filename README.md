@@ -1,4 +1,4 @@
-# 기타 스케일 시각화
+# Guitar ScaleUp
 
 ![프리뷰](public/preview.png)
 
