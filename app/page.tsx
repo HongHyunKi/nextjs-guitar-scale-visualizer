@@ -76,21 +76,7 @@ export default function Home() {
                 '0 0 20px rgba(74, 144, 217, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
             }}
           >
-            <Link href="/guitar-scale">START PRACTICING</Link>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="font-mono text-xs px-8 py-6 border-accent-blue/50 text-foreground hover:bg-accent-blue/10 transition-all hover:scale-105"
-          >
-            <a
-              href="https://github.com/hyunki/nextjs-guitar-scale-visualizer"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              VIEW ON GITHUB
-            </a>
+            <Link href="/guitar-scale">스케일 연습 시작하기</Link>
           </Button>
         </motion.div>
 
