@@ -11,7 +11,6 @@ export default function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden">
       <AmbientGlow />
-      <FloatingNotes />
 
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[10%] left-[8%]">
@@ -40,15 +39,6 @@ export default function Home() {
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="mb-8"
-        >
-          <PixelFretboardIcon />
-        </motion.div>
-
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
