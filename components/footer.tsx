@@ -21,7 +21,7 @@ export function Footer() {
             </a>
 
             <a
-              href="mailto:dev.hyunki@gamil.com"
+              href="mailto:dev.hyunki@gmail.com"
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <Mail className="w-4 h-4" />

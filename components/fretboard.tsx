@@ -105,8 +105,8 @@ export function Fretboard({
   // 프렛별 세로선 스타일 (12=옥타브, 나머지=일반, 0=너트는 별도 처리)
   const getFretBorderClass = (fret: number) => {
     if (fret === 0) return ''
-    if (fret === 12) return 'border-r-2 border-rose-500/70'
-    return 'border-r-2 border-zinc-700/80'
+    if (fret === 12) return 'border-r-2 border-accent-orange/70'
+    return 'border-r-2 border-border'
   }
 
   // 프렛별 너비 (기타 물리 법칙: 12프렛 = 1프렛의 절반)
@@ -151,14 +151,14 @@ export function Fretboard({
                     {/* 현(String) 가로선 (0프렛 왼쪽은 표시 안 함) */}
                     {!isOpenString && (
                       <div
-                        className="absolute top-1/2 left-0 right-0 bg-zinc-500/50 pointer-events-none"
+                        className="absolute top-1/2 left-0 right-0 bg-muted-foreground/50 pointer-events-none"
                         style={{ height: `${1.5 + stringIndex * 0.3}px` }}
                       />
                     )}
 
                     {/* 0프렛 너트 세로선 (오른쪽 끝 = 1프렛 경계) */}
                     {isOpenString && (
-                      <div className="absolute inset-y-0 right-0 w-[6px] bg-zinc-200 pointer-events-none" />
+                      <div className="absolute inset-y-0 right-0 w-[6px] bg-foreground/90 pointer-events-none" />
                     )}
 
                     {/* 활성 노트 (0프렛 포함, 동일 UI) */}
@@ -170,7 +170,7 @@ export function Fretboard({
                         whileTap={{ scale: 0.9 }}
                         onClick={() => playNote(note)}
                         className={cn(
-                          'relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold transition-all shadow-sm',
+                          'relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all shadow-sm',
                           getNoteColorClass(isRoot)
                         )}
                       >
@@ -187,7 +187,7 @@ export function Fretboard({
                         animate={{ scale: 1 }}
                         onClick={() => playNote(note)}
                         className={cn(
-                          'relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold transition-all shadow-sm opacity-40',
+                          'relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all shadow-sm opacity-40',
                           getNoteColorClass(isRoot)
                         )}
                       >
@@ -219,10 +219,10 @@ export function Fretboard({
               {fret > 0 && (
                 <span
                   className={cn(
-                    'text-[11px] font-mono font-medium',
+                    'text-xs font-mono font-medium',
                     fret === 12
-                      ? 'text-rose-500/80'
-                      : 'text-muted-foreground/50'
+                      ? 'text-accent-orange'
+                      : 'text-muted-foreground'
                   )}
                 >
                   {fret}

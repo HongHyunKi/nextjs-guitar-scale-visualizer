@@ -31,7 +31,14 @@ lib/
   scale-tests.ts        — runnable test script (npx tsx lib/scale-tests.ts)
 docs/
   pentatonic-scale-spec.md — original spec for scale implementation
+DESIGN.md               — design system (authoritative for ALL UI styling)
 ```
+
+---
+
+## Design System
+
+**All UI styling must follow `DESIGN.md` (authoritative).** Read it before adding or modifying any className. Key rules: design tokens only (no hex/rgba/`zinc-*`/`rose-*` in components), text size floor `text-xs`, contrast floor `text-muted-foreground`, color semantics (orange = root note, teal = scale/selection, blue·green = brand only).
 
 ---
 

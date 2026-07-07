@@ -530,7 +530,7 @@ export function BackingTrackPlayer({
           <div className="flex flex-col gap-1.5">
             {mode === 'backing' && (
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground w-10">
+                <span className="text-xs text-muted-foreground w-11">
                   Piano
                 </span>
                 <input
@@ -541,13 +541,13 @@ export function BackingTrackPlayer({
                   onChange={e => setChordVolume(Number(e.target.value))}
                   className="w-24 accent-accent-teal"
                 />
-                <span className="text-[11px] text-muted-foreground w-7 tabular-nums">
+                <span className="text-xs text-muted-foreground w-7 tabular-nums">
                   {chordVolume}
                 </span>
               </div>
             )}
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground w-10">
+              <span className="text-xs text-muted-foreground w-11">
                 Drums
               </span>
               <input
@@ -558,7 +558,7 @@ export function BackingTrackPlayer({
                 onChange={e => setDrumVolume(Number(e.target.value))}
                 className="w-24 accent-accent-teal"
               />
-              <span className="text-[11px] text-muted-foreground w-7 tabular-nums">
+              <span className="text-xs text-muted-foreground w-7 tabular-nums">
                 {drumVolume}
               </span>
             </div>
@@ -584,8 +584,8 @@ export function BackingTrackPlayer({
                 'rounded-full',
                 isActive
                   ? isDownbeat
-                    ? 'w-5 h-5 bg-accent-orange shadow-[0_0_8px_2px_var(--accent-orange)]'
-                    : 'w-5 h-5 bg-accent-teal shadow-[0_0_8px_2px_var(--accent-teal)]'
+                    ? 'w-5 h-5 bg-accent-orange shadow-lg shadow-accent-orange/50'
+                    : 'w-5 h-5 bg-accent-teal shadow-lg shadow-accent-teal/50'
                   : 'w-4 h-4 bg-muted-foreground/30'
               )}
             />

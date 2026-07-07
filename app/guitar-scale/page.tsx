@@ -7,6 +7,7 @@ import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
 import { FretControl } from '@/components/fret-control'
 import { BackingTrackPlayer } from '@/components/backing-track-player'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Music } from 'lucide-react'
 import {
   ScaleType,
@@ -46,6 +47,7 @@ export default function Page() {
               </p>
             </div>
           </div>
+          <ThemeToggle />
         </div>
 
         {/* Fretboard */}
@@ -104,7 +106,11 @@ export default function Page() {
                   {scaleNotes.map((note, index) => (
                     <span
                       key={index}
-                      className="px-2 py-1 text-sm font-medium rounded border bg-accent-teal/15 text-accent-teal border-accent-teal/30"
+                      className={
+                        index === 0
+                          ? 'px-2 py-1 text-sm font-medium rounded border bg-accent-orange/15 text-accent-orange border-accent-orange/30'
+                          : 'px-2 py-1 text-sm font-medium rounded border bg-accent-teal/15 text-accent-teal border-accent-teal/30'
+                      }
                     >
                       {note}
                     </span>
