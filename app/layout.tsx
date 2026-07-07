@@ -10,8 +10,8 @@ const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://nextjs-guitar-scale-visualizer.vercel.app'),
-  title: 'ScaleUp | 일렉기타 지판 스케일 및 릭 연습 독학 도우미',
-  description: '방구석 기타리스트를 위한 스케일 시각화',
+  title: 'Guitar ScaleUp | 기타 연습 도구 모음 — 스케일 · 코드사전 · 메트로놈',
+  description: '방구석 기타리스트를 위한 연습 도구 모음',
   generator: 'dev.hyunki',
   icons: {
     icon: [
@@ -23,8 +23,8 @@ export const metadata: Metadata = {
     apple: '/apple-icon.png',
   },
   openGraph: {
-    title: 'ScaleUp | 일렉기타 지판 스케일 및 릭 연습 독학 도우미',
-    description: '방구석 기타리스트를 위한 스케일 시각화',
+    title: 'Guitar ScaleUp | 기타 연습 도구 모음 — 스케일 · 코드사전 · 메트로놈',
+    description: '방구석 기타리스트를 위한 연습 도구 모음',
     type: 'website',
     locale: 'ko_KR',
     siteName: 'Guitar ScaleUp',
@@ -33,8 +33,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ScaleUp | 일렉기타 지판 스케일 및 릭 연습 독학 도우미',
-    description: '방구석 기타리스트를 위한 스케일 시각화',
+    title: 'Guitar ScaleUp | 기타 연습 도구 모음 — 스케일 · 코드사전 · 메트로놈',
+    description: '방구석 기타리스트를 위한 연습 도구 모음',
     // TODO: Twitter 카드 이미지 추가 시
     // images: ['/og-image.png'],
   },
