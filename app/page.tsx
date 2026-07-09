@@ -27,8 +27,8 @@ const FEATURES: Feature[] = [
     id: 'chords',
     icon: BookOpen,
     title: '코드사전',
-    description: '코드 구성음과 운지법을 지판 위에서 바로 확인합니다.',
-    href: null,
+    description: '코드 구성음과 운지법을 다이어그램으로 확인하고 소리로 들어봅니다.',
+    href: '/chords',
     accent: 'bg-accent-blue/15 text-accent-blue border-accent-blue/30',
   },
   {

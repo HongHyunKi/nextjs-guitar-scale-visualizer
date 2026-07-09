@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useMemo } from 'react'
-import * as Tone from 'tone'
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import {
@@ -20,8 +19,9 @@ import {
   CAGEDSelection,
   isInCAGEDShapeRange,
 } from '@/lib/caged-utils'
+import { GuitarTone, useGuitarSampler } from '@/lib/guitar-sampler'
 
-export type GuitarTone = 'electric' | 'acoustic'
+export type { GuitarTone }
 
 interface FretboardProps {
   rootNote: string
@@ -36,46 +36,6 @@ interface FretboardProps {
 
 const STRINGS = ['E', 'B', 'G', 'D', 'A', 'E'] // 고음현부터 저음현 순
 
-// 실제 기타 녹음 샘플 (tonejs-instruments, CC-BY 3.0 — README 출처 표기 참조)
-// Sampler가 샘플 사이 음정은 리피칭으로 채운다
-const SAMPLE_URLS: Record<GuitarTone, Record<string, string>> = {
-  electric: {
-    E2: 'E2.mp3',
-    'F#2': 'Fs2.mp3',
-    A2: 'A2.mp3',
-    C3: 'C3.mp3',
-    'D#3': 'Ds3.mp3',
-    'F#3': 'Fs3.mp3',
-    A3: 'A3.mp3',
-    C4: 'C4.mp3',
-    'D#4': 'Ds4.mp3',
-    'F#4': 'Fs4.mp3',
-    A4: 'A4.mp3',
-    C5: 'C5.mp3',
-    'D#5': 'Ds5.mp3',
-    'F#5': 'Fs5.mp3',
-    A5: 'A5.mp3',
-    C6: 'C6.mp3',
-  },
-  acoustic: {
-    E2: 'E2.mp3',
-    G2: 'G2.mp3',
-    A2: 'A2.mp3',
-    C3: 'C3.mp3',
-    D3: 'D3.mp3',
-    E3: 'E3.mp3',
-    G3: 'G3.mp3',
-    A3: 'A3.mp3',
-    C4: 'C4.mp3',
-    D4: 'D4.mp3',
-    E4: 'E4.mp3',
-    G4: 'G4.mp3',
-    A4: 'A4.mp3',
-    C5: 'C5.mp3',
-    D5: 'D5.mp3',
-  },
-}
-
 export function Fretboard({
   rootNote,
   scaleType,
@@ -86,21 +46,7 @@ export function Fretboard({
   selectedCAGEDShape = 'all',
   guitarTone = 'electric',
 }: FretboardProps) {
-  const samplerRef = useRef<Tone.Sampler | null>(null)
-
-  useEffect(() => {
-    const sampler = new Tone.Sampler({
-      urls: SAMPLE_URLS[guitarTone],
-      baseUrl: `/samples/guitar-${guitarTone}/`,
-      release: 1,
-    }).toDestination()
-    samplerRef.current = sampler
-
-    return () => {
-      samplerRef.current = null
-      sampler.dispose()
-    }
-  }, [guitarTone])
+  const { play } = useGuitarSampler(guitarTone)
 
   const scaleNotes = useMemo(
     () => getScaleNotes(rootNote, scaleType),
@@ -113,16 +59,13 @@ export function Fretboard({
     [frets, startFret]
   )
 
-  const playNote = async (stringIndex: number, fret: number) => {
-    await Tone.start()
-    const sampler = samplerRef.current
-    if (!sampler || !sampler.loaded) return // 샘플 로드 전 클릭은 무시
+  const playNote = (stringIndex: number, fret: number) => {
     const pitch = getPitchFromFret(
       stringIndex,
       fret,
       isScaleFlat(rootNote, scaleType)
     )
-    sampler.triggerAttackRelease(pitch, '2n')
+    play(pitch, '2n')
   }
 
   const getDisplayNote = (note: string) => {
