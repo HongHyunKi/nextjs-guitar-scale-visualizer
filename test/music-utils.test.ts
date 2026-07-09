@@ -1,9 +1,11 @@
 import {
   getNoteIndex,
   getNoteFromFret,
+  getPitchFromFret,
   getScaleNotes,
   isScaleFlat,
   CHROMATIC_NOTES,
+  STANDARD_TUNING_MIDI,
   type ScaleType,
 } from '@/lib/music-utils'
 
@@ -359,5 +361,60 @@ describe('isScaleFlat', () => {
 
   it('natural major: C → false (no flats/sharps)', () => {
     expect(isScaleFlat('C', 'major')).toBe(false)
+  })
+})
+
+// ─── getPitchFromFret ────────────────────────────────────────────────────────
+
+describe('getPitchFromFret', () => {
+  it('open strings match standard tuning (E4 B3 G3 D3 A2 E2)', () => {
+    expect(getPitchFromFret(0, 0)).toBe('E4')
+    expect(getPitchFromFret(1, 0)).toBe('B3')
+    expect(getPitchFromFret(2, 0)).toBe('G3')
+    expect(getPitchFromFret(3, 0)).toBe('D3')
+    expect(getPitchFromFret(4, 0)).toBe('A2')
+    expect(getPitchFromFret(5, 0)).toBe('E2')
+  })
+
+  it('same fret on different strings yields different octaves', () => {
+    // 3rd fret: low E string = G2, high E string = G4
+    expect(getPitchFromFret(5, 3)).toBe('G2')
+    expect(getPitchFromFret(0, 3)).toBe('G4')
+  })
+
+  it('12th fret is one octave above the open string', () => {
+    expect(getPitchFromFret(5, 12)).toBe('E3')
+    expect(getPitchFromFret(0, 12)).toBe('E5')
+    expect(getPitchFromFret(4, 12)).toBe('A3')
+  })
+
+  it('octave increments at C, not at the root', () => {
+    // A2 string: fret 2 = B2, fret 3 = C3 (octave boundary)
+    expect(getPitchFromFret(4, 2)).toBe('B2')
+    expect(getPitchFromFret(4, 3)).toBe('C3')
+  })
+
+  it('flat spelling when useFlat is true', () => {
+    // low E string fret 2 = F#2 / Gb2
+    expect(getPitchFromFret(5, 2, false)).toBe('F#2')
+    expect(getPitchFromFret(5, 2, true)).toBe('Gb2')
+    // A string fret 1 = A#2 / Bb2
+    expect(getPitchFromFret(4, 1, false)).toBe('A#2')
+    expect(getPitchFromFret(4, 1, true)).toBe('Bb2')
+  })
+
+  it('pitch class agrees with getNoteFromFret for every string and fret', () => {
+    const STRINGS = ['E', 'B', 'G', 'D', 'A', 'E']
+    for (let s = 0; s < 6; s++) {
+      for (let fret = 0; fret <= 24; fret++) {
+        const pitch = getPitchFromFret(s, fret)
+        const noteName = pitch.replace(/-?\d+$/, '')
+        expect(noteName).toBe(getNoteFromFret(STRINGS[s], fret))
+      }
+    }
+  })
+
+  it('MIDI numbers of open strings are correct', () => {
+    expect(STANDARD_TUNING_MIDI).toEqual([64, 59, 55, 50, 45, 40])
   })
 })

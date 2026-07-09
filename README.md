@@ -77,3 +77,7 @@ pnpm start
 3. **표기법 선택**: 편한 표기법으로 전환합니다.
 4. **프렛 수 조절**: 기타에 맞게 프렛 수를 조절합니다.
 5. **프렛보드 확인**: 강조된 음들을 통해 스케일 패턴을 학습합니다.
+
+## 크레딧
+
+- 기타 사운드 샘플: [tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments) (guitar-electric, guitar-acoustic) — 샘플 라이선스 [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/), © N. Brosowsky 및 원 샘플 제작자들. `public/samples/`에 mp3 일부를 포함.

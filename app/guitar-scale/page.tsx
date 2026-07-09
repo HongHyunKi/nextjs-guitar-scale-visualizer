@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Fretboard } from '@/components/fretboard'
+import { Fretboard, GuitarTone } from '@/components/fretboard'
+import { GuitarToneToggle } from '@/components/guitar-tone-toggle'
 import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
@@ -26,6 +27,7 @@ export default function Page() {
   const [cagedEnabled, setCagedEnabled] = useState(false)
   const [selectedCAGEDShape, setSelectedCAGEDShape] =
     useState<CAGEDSelection>('all')
+  const [guitarTone, setGuitarTone] = useState<GuitarTone>('electric')
 
   const scaleNotes = getScaleNotes(rootNote, scaleType)
 
@@ -61,6 +63,7 @@ export default function Page() {
               frets={frets}
               cagedEnabled={cagedEnabled}
               selectedCAGEDShape={selectedCAGEDShape}
+              guitarTone={guitarTone}
             />
           </div>
 
@@ -135,6 +138,13 @@ export default function Page() {
                   type={notationType}
                   onTypeChange={setNotationType}
                 />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Guitar Tone
+                </label>
+                <GuitarToneToggle tone={guitarTone} onToneChange={setGuitarTone} />
               </div>
 
               <div className="w-full max-w-xs">

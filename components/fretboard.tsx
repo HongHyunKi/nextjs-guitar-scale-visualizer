@@ -9,6 +9,7 @@ import {
   noteToInterval,
   getNoteFromFret,
   getNoteIndex,
+  getPitchFromFret,
   getScaleNotes,
   isScaleFlat,
   ScaleType,
@@ -20,6 +21,8 @@ import {
   isInCAGEDShapeRange,
 } from '@/lib/caged-utils'
 
+export type GuitarTone = 'electric' | 'acoustic'
+
 interface FretboardProps {
   rootNote: string
   scaleType: ScaleType
@@ -28,9 +31,50 @@ interface FretboardProps {
   frets?: number
   cagedEnabled?: boolean
   selectedCAGEDShape?: CAGEDSelection
+  guitarTone?: GuitarTone
 }
 
 const STRINGS = ['E', 'B', 'G', 'D', 'A', 'E'] // 고음현부터 저음현 순
+
+// 실제 기타 녹음 샘플 (tonejs-instruments, CC-BY 3.0 — README 출처 표기 참조)
+// Sampler가 샘플 사이 음정은 리피칭으로 채운다
+const SAMPLE_URLS: Record<GuitarTone, Record<string, string>> = {
+  electric: {
+    E2: 'E2.mp3',
+    'F#2': 'Fs2.mp3',
+    A2: 'A2.mp3',
+    C3: 'C3.mp3',
+    'D#3': 'Ds3.mp3',
+    'F#3': 'Fs3.mp3',
+    A3: 'A3.mp3',
+    C4: 'C4.mp3',
+    'D#4': 'Ds4.mp3',
+    'F#4': 'Fs4.mp3',
+    A4: 'A4.mp3',
+    C5: 'C5.mp3',
+    'D#5': 'Ds5.mp3',
+    'F#5': 'Fs5.mp3',
+    A5: 'A5.mp3',
+    C6: 'C6.mp3',
+  },
+  acoustic: {
+    E2: 'E2.mp3',
+    G2: 'G2.mp3',
+    A2: 'A2.mp3',
+    C3: 'C3.mp3',
+    D3: 'D3.mp3',
+    E3: 'E3.mp3',
+    G3: 'G3.mp3',
+    A3: 'A3.mp3',
+    C4: 'C4.mp3',
+    D4: 'D4.mp3',
+    E4: 'E4.mp3',
+    G4: 'G4.mp3',
+    A4: 'A4.mp3',
+    C5: 'C5.mp3',
+    D5: 'D5.mp3',
+  },
+}
 
 export function Fretboard({
   rootNote,
@@ -40,24 +84,23 @@ export function Fretboard({
   frets = 24,
   cagedEnabled = false,
   selectedCAGEDShape = 'all',
+  guitarTone = 'electric',
 }: FretboardProps) {
-  const synthRef = useRef<Tone.PolySynth | null>(null)
+  const samplerRef = useRef<Tone.Sampler | null>(null)
 
   useEffect(() => {
-    synthRef.current = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'triangle' },
-      envelope: {
-        attack: 0.005,
-        decay: 0.1,
-        sustain: 0.3,
-        release: 0.5,
-      },
+    const sampler = new Tone.Sampler({
+      urls: SAMPLE_URLS[guitarTone],
+      baseUrl: `/samples/guitar-${guitarTone}/`,
+      release: 1,
     }).toDestination()
+    samplerRef.current = sampler
 
     return () => {
-      synthRef.current?.dispose()
+      samplerRef.current = null
+      sampler.dispose()
     }
-  }, [])
+  }, [guitarTone])
 
   const scaleNotes = useMemo(
     () => getScaleNotes(rootNote, scaleType),
@@ -70,14 +113,16 @@ export function Fretboard({
     [frets, startFret]
   )
 
-  const playNote = (note: string) => {
-    if (synthRef.current && Tone.context.state === 'running') {
-      synthRef.current.triggerAttackRelease(`${note}4`, '8n')
-    } else {
-      Tone.context.resume().then(() => {
-        synthRef.current?.triggerAttackRelease(`${note}4`, '8n')
-      })
-    }
+  const playNote = async (stringIndex: number, fret: number) => {
+    await Tone.start()
+    const sampler = samplerRef.current
+    if (!sampler || !sampler.loaded) return // 샘플 로드 전 클릭은 무시
+    const pitch = getPitchFromFret(
+      stringIndex,
+      fret,
+      isScaleFlat(rootNote, scaleType)
+    )
+    sampler.triggerAttackRelease(pitch, '2n')
   }
 
   const getDisplayNote = (note: string) => {
@@ -168,7 +213,7 @@ export function Fretboard({
                         animate={{ scale: 1 }}
                         whileHover={{ scale: 1.15 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => playNote(note)}
+                        onClick={() => playNote(stringIndex, fret)}
                         className={cn(
                           'relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all shadow-sm',
                           getNoteColorClass(isRoot)
@@ -185,7 +230,7 @@ export function Fretboard({
                       <motion.button
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        onClick={() => playNote(note)}
+                        onClick={() => playNote(stringIndex, fret)}
                         className={cn(
                           'relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold transition-all shadow-sm opacity-40',
                           getNoteColorClass(isRoot)

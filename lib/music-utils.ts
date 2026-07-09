@@ -236,3 +236,20 @@ export function getNoteFromFret(
   const notesArray = useFlat ? NOTES_FLAT : NOTES_SHARP
   return notesArray[noteIndex]
 }
+
+// 표준 튜닝 개방현 MIDI 번호 (fretboard STRINGS 순서: 고음현→저음현)
+// E4=64, B3=59, G3=55, D3=50, A2=45, E2=40
+export const STANDARD_TUNING_MIDI = [64, 59, 55, 50, 45, 40]
+
+// stringIndex(0=1번줄 고음 E) + fret → 옥타브 포함 피치명 (예: 'G2', 'Eb4')
+// Tone.js가 그대로 받는 scientific pitch notation을 반환한다.
+export function getPitchFromFret(
+  stringIndex: number,
+  fret: number,
+  useFlat: boolean = false
+): string {
+  const midi = STANDARD_TUNING_MIDI[stringIndex] + fret
+  const octave = Math.floor(midi / 12) - 1
+  const notesArray = useFlat ? NOTES_FLAT : NOTES_SHARP
+  return `${notesArray[midi % 12]}${octave}`
+}
