@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as Tone from 'tone'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ScaleType } from '@/lib/music-utils'
 import {
@@ -158,6 +159,7 @@ export function BackingTrackPlayer({
   scaleType,
 }: BackingTrackPlayerProps) {
   const [mode, setMode] = useState<PlayerMode>('backing')
+  const [expanded, setExpanded] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
   const [bpm, setBpm] = useState(90)
   const [bpmInput, setBpmInput] = useState('90')
@@ -417,26 +419,52 @@ export function BackingTrackPlayer({
             </button>
           ))}
         </div>
-        <button
-          onClick={handleTogglePlay}
-          disabled={mode === 'backing' && !samplerLoaded}
-          className={cn(
-            'px-5 py-2 rounded-lg text-sm font-semibold transition-all',
-            isPlaying
-              ? 'bg-accent-orange text-background hover:opacity-90'
-              : mode === 'metronome' || samplerLoaded
-                ? 'bg-accent-teal text-background hover:opacity-90'
-                : 'bg-muted text-muted-foreground cursor-not-allowed'
-          )}
-        >
-          {mode === 'backing' && !samplerLoaded
-            ? 'Loading...'
-            : isPlaying
-              ? '■ Stop'
-              : '▶ Play'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleTogglePlay}
+            disabled={mode === 'backing' && !samplerLoaded}
+            className={cn(
+              'px-5 py-2 rounded-lg text-sm font-semibold transition-all',
+              isPlaying
+                ? 'bg-accent-orange text-background hover:opacity-90'
+                : mode === 'metronome' || samplerLoaded
+                  ? 'bg-accent-teal text-background hover:opacity-90'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
+            )}
+          >
+            {mode === 'backing' && !samplerLoaded
+              ? 'Loading...'
+              : isPlaying
+                ? '■ Stop'
+                : '▶ Play'}
+          </button>
+          <button
+            onClick={() => setExpanded(prev => !prev)}
+            aria-label={expanded ? '세부 설정 접기' : '세부 설정 펼치기'}
+            aria-expanded={expanded}
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-border bg-card hover:bg-accent-teal/10 hover:border-accent-teal transition-colors text-muted-foreground"
+          >
+            <motion.span
+              animate={{ rotate: expanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </motion.span>
+          </button>
+        </div>
       </div>
 
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key="player-details"
+            initial={{ opacity: 0, y: -8, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -8, height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="overflow-hidden space-y-5"
+          >
       {/* Style + BPM */}
       <div className="flex flex-wrap items-center gap-6">
         {/* Style selector */}
@@ -653,6 +681,9 @@ export function BackingTrackPlayer({
           </div>
         </>
       )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

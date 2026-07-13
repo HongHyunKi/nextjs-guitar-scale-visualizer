@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { Fretboard, GuitarTone } from '@/components/fretboard'
-import { GuitarToneToggle } from '@/components/guitar-tone-toggle'
-import { NotationToggle } from '@/components/notation-toggle'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
-import { FretControl } from '@/components/fret-control'
+import { ViewSettingsPopover } from '@/components/view-settings-popover'
 import { BackingTrackPlayer } from '@/components/backing-track-player'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Music } from 'lucide-react'
@@ -33,7 +31,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -52,138 +50,102 @@ export default function Page() {
           <ThemeToggle />
         </div>
 
-        {/* Fretboard */}
-        <div className="relative">
-          <div className="bg-card border border-border rounded-xl p-6 pr-0 xl:pr-6 overflow-x-auto overflow-y-visible custom-scrollbar">
-            <Fretboard
-              rootNote={rootNote}
-              scaleType={scaleType}
+        {/* Quick Controls — 가장 자주 바꾸는 컨트롤을 프렛보드 바로 위로 */}
+        <div className="p-4 md:p-6 bg-card border border-border rounded-xl space-y-5">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Scale
+            </p>
+            <ViewSettingsPopover
               notationType={notationType}
+              onNotationTypeChange={setNotationType}
+              guitarTone={guitarTone}
+              onGuitarToneChange={setGuitarTone}
               startFret={startFret}
               frets={frets}
-              cagedEnabled={cagedEnabled}
-              selectedCAGEDShape={selectedCAGEDShape}
-              guitarTone={guitarTone}
+              onStartFretChange={setStartFret}
+              onFretsChange={setFrets}
             />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              Root Note
+            </label>
+            <RootNoteSelector
+              rootNote={rootNote}
+              onRootNoteChange={setRootNote}
+              notationType={notationType}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              Scale Type
+            </label>
+            <ScaleSelector
+              scaleType={scaleType}
+              onScaleTypeChange={setScaleType}
+            />
+          </div>
+
+          {/* TODO CAGED */}
+          {/* <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              CAGED System
+            </label>
+            <CAGEDSelector
+              enabled={cagedEnabled}
+              onEnabledChange={setCagedEnabled}
+              selectedShape={selectedCAGEDShape}
+              onShapeChange={setSelectedCAGEDShape}
+            />
+          </div> */}
+        </div>
+
+        {/* Fretboard */}
+        <div className="relative">
+          <div className="bg-card border border-border rounded-xl">
+            {/* 구성음 범례 — 프렛보드와 한 덩어리로 묶어 참조하기 쉽게 */}
+            <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-6 pb-4">
+              <p className="text-sm font-medium text-muted-foreground">
+                <span className="text-foreground font-semibold">
+                  {rootNote} {SCALE_LABELS[scaleType]}
+                </span>{' '}
+                구성음
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {scaleNotes.map((note, index) => (
+                  <span
+                    key={index}
+                    className={
+                      index === 0
+                        ? 'px-2 py-1 text-sm font-medium rounded border bg-accent-orange/15 text-accent-orange border-accent-orange/30'
+                        : 'px-2 py-1 text-sm font-medium rounded border bg-accent-teal/15 text-accent-teal border-accent-teal/30'
+                    }
+                  >
+                    {note}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 pb-6 pr-0 xl:pr-6 overflow-x-auto overflow-y-visible custom-scrollbar">
+              <Fretboard
+                rootNote={rootNote}
+                scaleType={scaleType}
+                notationType={notationType}
+                startFret={startFret}
+                frets={frets}
+                cagedEnabled={cagedEnabled}
+                selectedCAGEDShape={selectedCAGEDShape}
+                guitarTone={guitarTone}
+              />
+            </div>
           </div>
 
           {/* Scroll indicator */}
           <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-accent-teal/60 via-accent-teal/80 to-accent-teal/60 pointer-events-none opacity-70 xl:opacity-0 rounded-r-xl shadow-lg shadow-accent-teal/50"></div>
-        </div>
-
-        {/* Controls */}
-        <div className="p-6 bg-card border border-border rounded-xl space-y-6">
-          {/* Scale 섹션 */}
-          <div className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Scale
-            </p>
-
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Root Note
-              </label>
-              <RootNoteSelector
-                rootNote={rootNote}
-                onRootNoteChange={setRootNote}
-                notationType={notationType}
-              />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4 items-start">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Scale Type
-                </label>
-                <ScaleSelector
-                  scaleType={scaleType}
-                  onScaleTypeChange={setScaleType}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  {rootNote} {SCALE_LABELS[scaleType]} 구성음
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {scaleNotes.map((note, index) => (
-                    <span
-                      key={index}
-                      className={
-                        index === 0
-                          ? 'px-2 py-1 text-sm font-medium rounded border bg-accent-orange/15 text-accent-orange border-accent-orange/30'
-                          : 'px-2 py-1 text-sm font-medium rounded border bg-accent-teal/15 text-accent-teal border-accent-teal/30'
-                      }
-                    >
-                      {note}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* View 섹션 */}
-          <div className="space-y-4 border-t border-border pt-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              View
-            </p>
-
-            <div className="flex flex-wrap gap-6">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Notation
-                </label>
-                <NotationToggle
-                  type={notationType}
-                  onTypeChange={setNotationType}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Guitar Tone
-                </label>
-                <GuitarToneToggle tone={guitarTone} onToneChange={setGuitarTone} />
-              </div>
-
-              <div className="w-full max-w-xs">
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Start Fret
-                </label>
-                <FretControl
-                  value={startFret}
-                  onChange={setStartFret}
-                  min={0}
-                  max={frets - 3}
-                />
-              </div>
-              <div className="w-full max-w-xs">
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  End Fret
-                </label>
-                <FretControl
-                  value={frets}
-                  onChange={setFrets}
-                  min={startFret + 3}
-                  max={24}
-                />
-              </div>
-            </div>
-
-            {/* TODO CAGED */}
-            {/* <div>
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                CAGED System
-              </label>
-              <CAGEDSelector
-                enabled={cagedEnabled}
-                onEnabledChange={setCagedEnabled}
-                selectedShape={selectedCAGEDShape}
-                onShapeChange={setSelectedCAGEDShape}
-              />
-            </div> */}
-          </div>
         </div>
 
         {/* Backing Track Player */}
