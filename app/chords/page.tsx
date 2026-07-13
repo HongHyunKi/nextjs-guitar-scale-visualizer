@@ -31,7 +31,10 @@ export default function Page() {
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="flex items-center gap-3 transition-opacity hover:opacity-80"
+          >
             <div className="p-2 rounded-lg bg-gradient-to-br from-accent-blue via-accent-teal to-accent-green">
               <BookOpen className="w-6 h-6 text-background" />
             </div>
@@ -43,7 +46,7 @@ export default function Page() {
                 코드 구성음과 운지법을 다이어그램으로 확인
               </p>
             </div>
-          </div>
+          </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
           </div>

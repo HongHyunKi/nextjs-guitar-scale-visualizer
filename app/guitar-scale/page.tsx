@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Fretboard, GuitarTone } from '@/components/fretboard'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
@@ -34,7 +35,10 @@ export default function Page() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="flex items-center gap-3 transition-opacity hover:opacity-80"
+          >
             <div className="p-2 rounded-lg bg-gradient-to-br from-accent-blue via-accent-teal to-accent-green">
               <Music className="w-6 h-6 text-background" />
             </div>
@@ -46,7 +50,7 @@ export default function Page() {
                 방구석 기타리스트를 위한 스케일 시각화
               </p>
             </div>
-          </div>
+          </Link>
           <ThemeToggle />
         </div>
 

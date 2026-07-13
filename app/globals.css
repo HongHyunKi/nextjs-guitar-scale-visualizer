@@ -162,6 +162,18 @@
       color-mix(in oklch, var(--muted) 20%, transparent);
   }
 
+  /* 프렛보드 칼럼: 모바일/태블릿은 실제 픽셀폭 고정 + 가로 스크롤,
+     xl 이상(데스크톱)은 기존처럼 컨테이너 폭에 비율대로 꽉 채움 */
+  .fret-col {
+    flex: 0 0 var(--fret-w);
+  }
+
+  @media (min-width: 80rem) {
+    .fret-col {
+      flex: var(--fret-grow) 1 0%;
+    }
+  }
+
   /* Chrome, Safari, Edge, Opera */
   input::-webkit-outer-spin-button,
   input::-webkit-inner-spin-button {

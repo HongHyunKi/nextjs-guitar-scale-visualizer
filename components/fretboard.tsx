@@ -103,6 +103,14 @@ export function Fretboard({
     return Math.max(36, Math.round(72 * Math.pow(0.965, fret - 1)))
   }
 
+  // 0프렛(너트)은 항상 고정폭. 나머지는 .fret-col(globals.css)이 브레이크포인트별로
+  // 처리 — 모바일은 고정폭+스크롤, xl 이상은 비율대로 컨테이너를 꽉 채움
+  const getFretColumnStyle = (fret: number): React.CSSProperties => {
+    if (fret === 0) return { width: 52, flexShrink: 0 }
+    const w = getFretWidth(fret)
+    return { '--fret-w': `${w}px`, '--fret-grow': w } as React.CSSProperties
+  }
+
   return (
     <div className="w-full overflow-x-auto pb-6 custom-scrollbar">
       <div className="w-full flex flex-col">
@@ -128,13 +136,10 @@ export function Fretboard({
                     key={`fret-${stringIndex}-${fret}`}
                     className={cn(
                       'relative flex items-center justify-center',
+                      fret !== 0 && 'fret-col',
                       getFretBorderClass(fret)
                     )}
-                    style={
-                      fret === 0
-                        ? { width: 52, flexShrink: 0 }
-                        : { flex: getFretWidth(fret) }
-                    }
+                    style={getFretColumnStyle(fret)}
                   >
                     {/* 현(String) 가로선 (0프렛 왼쪽은 표시 안 함) */}
                     {!isOpenString && (
@@ -197,12 +202,11 @@ export function Fretboard({
           {allFrets.map(fret => (
             <div
               key={`num-${fret}`}
-              className="flex items-center justify-center"
-              style={
-                fret === 0
-                  ? { width: 52, flexShrink: 0 }
-                  : { flex: getFretWidth(fret) }
-              }
+              className={cn(
+                'flex items-center justify-center',
+                fret !== 0 && 'fret-col'
+              )}
+              style={getFretColumnStyle(fret)}
             >
               {fret > 0 && (
                 <span
@@ -226,12 +230,11 @@ export function Fretboard({
           {allFrets.map(fret => (
             <div
               key={`marker-${fret}`}
-              className="flex items-center justify-center gap-1 h-5"
-              style={
-                fret === 0
-                  ? { width: 52, flexShrink: 0 }
-                  : { flex: getFretWidth(fret) }
-              }
+              className={cn(
+                'flex items-center justify-center gap-1 h-5',
+                fret !== 0 && 'fret-col'
+              )}
+              style={getFretColumnStyle(fret)}
             >
               {[12, 24].includes(fret) ? (
                 <>
