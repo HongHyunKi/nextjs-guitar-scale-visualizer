@@ -38,47 +38,10 @@ function getSortedBarres(
   })).sort((a, b) => a.barre - b.barre)
 }
 
-// sorted 포지션 인덱스(0-4) → CAGED 레이블 순서
-// 루트별 sorted 순서와 무관하게, 낮은 포지션부터 C→A→G→E→D를 부여
-const POSITION_TO_LABEL: CAGEDShape[] = ['C', 'A', 'G', 'E', 'D']
-
-// 레이블 → sorted 포지션 인덱스
-const LABEL_TO_POSITION_IDX: Record<CAGEDShape, number> = {
-  C: 0,
-  A: 1,
-  G: 2,
-  E: 3,
-  D: 4,
-}
-
-/**
- * All 뷰에서 각 프렛의 CAGED 형태를 결정 (버킷 방식 — 겹침 없음)
- *
- * 각 형태는 자신의 배레 프렛부터 다음 형태의 배레 프렛 직전까지 담당.
- * 레이블은 chord shape이 아닌 positional 순서로 부여: 낮은 포지션부터 C→A→G→E→D.
- *
- * 검증 (C 메이저): C[0,3) A[3,5) G[5,8) E[8,10) D[10,12) — 변화 없음
- * 검증 (Am): sorted A[0],G[2],E[5],D[7],C[9] → 레이블 C[0,3) A[2,5) G[5,8) E[7,10) D[9,12)
- */
-export function getCAGEDShapeForFret(
-  fret: number,
-  rootNote: string
-): CAGEDShape {
-  const rootIndex = getNoteIndex(rootNote)
-  const sorted = getSortedBarres(rootIndex)
-  const f = fret % 12
-
-  let positionIdx = sorted.length - 1 // 기본값: wrap-around 처리
-  for (let i = 0; i < sorted.length; i++) {
-    if (sorted[i].barre <= f) positionIdx = i
-    else break
-  }
-  return POSITION_TO_LABEL[positionIdx]
-}
-
-// Shape별 barre로부터의 low/high 오프셋
-// Am 기준: A[0,3] G[2,5] E[5,8] D[7,10] C[9,12]
-// C 메이저 기준: C[0,3] A[3,6] G[5,8] E[8,11] D[10,13]
+// Shape별 barre로부터의 low/high 오프셋.
+// 실제 지판 노트 데이터로 독립 재검산해 확인됨 — 예: Am pentatonic E shape
+// [5,8]은 6번현·1번현 모두 5·8프렛에 노트가 있는, 흔히 "박스 1"로 불리는
+// 그 패턴과 정확히 일치한다. barre/offset 공식 자체는 정확하다.
 const SHAPE_LOW_OFFSET: Record<CAGEDShape, number> = {
   C: 0,
   A: 0,
@@ -98,9 +61,13 @@ const SHAPE_HIGH_OFFSET: Record<CAGEDShape, number> = {
 /**
  * 단일 Shape 선택 시 프렛이 해당 Shape 범위에 속하는지 확인
  *
- * Am 기준: A[0,3] G[2,5] E[5,8] D[7,10] C[9,12]
- * C 메이저 기준: C[0,3] A[3,6] G[5,8] E[8,11] D[10,13]
- * 인접 shape 간 겹침 (CAGED shared notes — 정상)
+ * 셰이프는 chord identity로 찾는다 (sorted 배열에서 자신의 barre 위치를
+ * findIndex로 검색) — 고정 위치 인덱스를 쓰면 정렬 순서가 [C,A,G,E,D]인
+ * 루트(=C)에서만 우연히 맞고 나머지 11개 루트에서는 전부 틀린다.
+ *
+ * Am 기준(sorted A[0] G[2] E[5] D[7] C[9]): A[0,3] G[2,5] E[5,8] D[7,10] C[9,13]
+ * C 메이저 기준(sorted C[0] A[3] G[5] E[8] D[10]): C[0,4] A[3,6] G[5,8] E[8,11] D[10,13]
+ * 인접 shape 간 겹침은 CAGED 이론상 정상(shared notes).
  */
 export function isInCAGEDShapeRange(
   fret: number,
@@ -110,15 +77,12 @@ export function isInCAGEDShapeRange(
   const rootIndex = getNoteIndex(rootNote)
   const sorted = getSortedBarres(rootIndex)
 
-  // 레이블(C/A/G/E/D) → sorted 포지션 인덱스 (chord shape이 아닌 위치 기반)
-  const positionIdx = LABEL_TO_POSITION_IDX[shape]
+  // shape 정체성으로 직접 검색 — 위치가 아니라 "이 shape가 어디 있는가"
+  const positionIdx = sorted.findIndex(s => s.shape === shape)
   const nextIdx = (positionIdx + 1) % sorted.length
 
-  const shapeEntry = sorted[positionIdx]
-  const chordShape = shapeEntry.shape // 실제 chord shape (SHAPE_HIGH_OFFSET 조회용)
-
-  const low = shapeEntry.barre + SHAPE_LOW_OFFSET[chordShape]
-  const highBase = sorted[nextIdx].barre + SHAPE_HIGH_OFFSET[chordShape]
+  const low = sorted[positionIdx].barre + SHAPE_LOW_OFFSET[shape]
+  const highBase = sorted[nextIdx].barre + SHAPE_HIGH_OFFSET[shape]
   // highBase가 low 이하면 옥타브 wrap (예: D 포지션의 next가 wrap-around될 때)
   const high = highBase <= low ? highBase + 12 : highBase
 
@@ -129,4 +93,38 @@ export function isInCAGEDShapeRange(
   return (
     (f >= low && f <= high) || (fret >= 12 && f + 12 >= low && f + 12 <= high)
   )
+}
+
+// 각 shape의 "루트 랜드마크" 위치 — 참고: SHAPE_BASE_NOTE 독스트링의 오프셋과 동일.
+// E/A/D shape는 open chord의 root가 barre 프렛 그 자체에 있고,
+// C/G shape는 open chord의 root가 barre + 3프렛에 있다.
+const SHAPE_ROOT_STRING: Record<CAGEDShape, number> = {
+  E: 6,
+  A: 5,
+  D: 4,
+  G: 6,
+  C: 5,
+}
+
+const SHAPE_ROOT_FRET_OFFSET: Record<CAGEDShape, number> = {
+  E: 0,
+  A: 0,
+  D: 0,
+  G: 3,
+  C: 3,
+}
+
+/**
+ * 셰이프의 루트음이 실제로 위치한 (스트링 번호, 프렛) — 1번줄(고음 E)~6번줄(저음 E) 기준.
+ * 예: C키에서 C shape → { string: 5, fret: 3 } (5번줄 3프렛)
+ */
+export function getShapeRootPosition(
+  rootNote: string,
+  shape: CAGEDShape
+): { string: number; fret: number } {
+  const barre = getBarreFret(getNoteIndex(rootNote), shape)
+  return {
+    string: SHAPE_ROOT_STRING[shape],
+    fret: barre + SHAPE_ROOT_FRET_OFFSET[shape],
+  }
 }

@@ -6,6 +6,7 @@ import { Fretboard, GuitarTone } from '@/components/fretboard'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
 import { ViewSettingsPopover } from '@/components/view-settings-popover'
+import { CAGEDSelector } from '@/components/caged-selector'
 import { BackingTrackPlayer } from '@/components/backing-track-player'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Music } from 'lucide-react'
@@ -15,7 +16,11 @@ import {
   SCALE_LABELS,
   getScaleNotes,
 } from '@/lib/music-utils'
-import { CAGEDSelection } from '@/lib/caged-utils'
+import {
+  CAGEDShape,
+  CAGEDSelection,
+  getShapeRootPosition,
+} from '@/lib/caged-utils'
 
 export default function Page() {
   const [notationType, setNotationType] = useState<NotationType>('alphabetical')
@@ -29,6 +34,10 @@ export default function Page() {
   const [guitarTone, setGuitarTone] = useState<GuitarTone>('electric')
 
   const scaleNotes = getScaleNotes(rootNote, scaleType)
+  const cagedRootPosition =
+    cagedEnabled && selectedCAGEDShape !== 'all'
+      ? getShapeRootPosition(rootNote, selectedCAGEDShape as CAGEDShape)
+      : null
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8">
@@ -93,8 +102,7 @@ export default function Page() {
             />
           </div>
 
-          {/* TODO CAGED */}
-          {/* <div>
+          <div>
             <label className="text-sm font-medium text-muted-foreground mb-2 block">
               CAGED System
             </label>
@@ -104,7 +112,13 @@ export default function Page() {
               selectedShape={selectedCAGEDShape}
               onShapeChange={setSelectedCAGEDShape}
             />
-          </div> */}
+            {cagedRootPosition && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {selectedCAGEDShape} Form · 루트 {cagedRootPosition.string}
+                번줄 {cagedRootPosition.fret}프렛
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Fretboard */}
