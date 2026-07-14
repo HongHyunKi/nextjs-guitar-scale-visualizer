@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion, MotionConfig } from 'framer-motion'
-import { AudioLines, BookOpen, Music, Timer, type LucideIcon } from 'lucide-react'
+import { AudioLines, BookOpen, Gauge, Music, Timer, type LucideIcon } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 type Feature = {
@@ -38,6 +38,14 @@ const FEATURES: Feature[] = [
     description: 'BPM과 박자를 설정해 리듬 연습을 합니다.',
     href: '/metronome',
     accent: 'bg-accent-orange/15 text-accent-orange border-accent-orange/30',
+  },
+  {
+    id: 'tuner',
+    icon: Gauge,
+    title: '튜너',
+    description: '마이크로 실시간 피치를 감지해 정확하게 튜닝합니다.',
+    href: '/tuner',
+    accent: 'bg-accent-green/15 text-accent-green border-accent-green/30',
   },
 ]
 

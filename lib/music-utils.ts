@@ -153,7 +153,7 @@ const FLAT_TO_SHARP: Record<string, string> = {
 const NOTES_SHARP = CHROMATIC_NOTES
 
 // All notes in chromatic order (flat notation)
-const NOTES_FLAT = [
+export const NOTES_FLAT = [
   'C',
   'Db',
   'D',
