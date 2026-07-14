@@ -338,13 +338,20 @@ export function Tuner() {
   )
 }
 
-// 6-인라인(일렉기타 스타일) 헤드스톡 실루엣 + 넥을 하나의 SVG 좌표계에 그려
-// 페그(튜닝 손잡이)와 현이 정확히 이어져 보이도록 한다. 페그를 탭하면 해당 줄이 선택된다.
-const HEADSTOCK_PEG_Y = 60
-const HEADSTOCK_NUT_Y = 100
-const HEADSTOCK_BOTTOM_Y = 210
-const PEG_X = [46, 91.6, 137.2, 182.8, 228.4, 274]
-const NUT_X = [96, 121.6, 147.2, 172.8, 198.4, 224]
+// 3+3(어쿠스틱/클래식 스타일) 헤드스톡: 좌측 위→아래로 4·5·6번 줄, 우측 위→아래로
+// 3·2·1번 줄 페그를 배치한다 — 실제 기타와 같은 배열. 헤드스톡 실루엣·스트링 포스트·
+// 페그 버튼·현을 하나의 SVG 좌표계에 그려 정확히 이어져 보이게 한다.
+// strings 배열 인덱스는 저음(i=0, 6번)→고음(i=5, 1번) 순서.
+const PEG_LAYOUT = [
+  { peg: [46, 184], post: [120, 184], nutX: 136 }, // 6번 (좌측 아래)
+  { peg: [46, 118], post: [120, 118], nutX: 146 }, // 5번 (좌측 중간)
+  { peg: [46, 52], post: [120, 52], nutX: 156 }, // 4번 (좌측 위)
+  { peg: [274, 52], post: [200, 52], nutX: 166 }, // 3번 (우측 위)
+  { peg: [274, 118], post: [200, 118], nutX: 176 }, // 2번 (우측 중간)
+  { peg: [274, 184], post: [200, 184], nutX: 186 }, // 1번 (우측 아래)
+] as const
+const NUT_Y = 212
+const BOTTOM_Y = 240
 // 저음(굵은 현)→고음(가는 현) 순서로 두께를 줄인다.
 const STRING_WIDTH = [4, 3.5, 3, 2.5, 2, 1.5]
 
@@ -361,17 +368,34 @@ function GuitarHeadstock({
 }) {
   return (
     <svg
-      viewBox="0 0 320 220"
+      viewBox="0 0 320 250"
       className="w-full max-w-xs mx-auto"
       role="group"
       aria-label="기타 헤드스톡 — 튜닝할 줄 선택"
     >
-      {/* Headstock + neck silhouette */}
+      {/* Headstock silhouette: 아래 좁은 넥 스텁 → 위로 벌어지는 패들 형태 */}
       <path
-        d="M46,14 L274,14 L224,100 L224,210 L96,210 L96,100 Z"
+        d={`M132,${BOTTOM_Y} L132,${NUT_Y} L94,196 L94,36 Q94,18 112,18 L208,18 Q226,18 226,36 L226,196 L188,${NUT_Y} L188,${BOTTOM_Y} Z`}
         className="fill-muted stroke-border"
         strokeWidth={1.5}
       />
+
+      {/* Peg shafts: 헤드스톡 밖 페그 버튼 ↔ 안쪽 스트링 포스트 연결 */}
+      {PEG_LAYOUT.map((p, i) => (
+        <line
+          key={i}
+          x1={p.peg[0]}
+          y1={p.peg[1]}
+          x2={p.post[0]}
+          y2={p.post[1]}
+          strokeWidth={6}
+          strokeLinecap="round"
+          className="stroke-border"
+        />
+      ))}
+
+      {/* Nut */}
+      <rect x={132} y={NUT_Y - 3} width={56} height={5} rx={2} className="fill-border" />
 
       {strings.map((s, i) => {
         const selected = selectedIndex === i
@@ -382,15 +406,25 @@ function GuitarHeadstock({
               ? 'stroke-accent-orange'
               : 'stroke-accent-teal/50'
           : 'stroke-muted-foreground/40'
+        const { post, nutX } = PEG_LAYOUT[i]
         return (
-          <polyline
-            key={s.note + i}
-            points={`${PEG_X[i]},${HEADSTOCK_PEG_Y} ${NUT_X[i]},${HEADSTOCK_NUT_Y} ${NUT_X[i]},${HEADSTOCK_BOTTOM_Y}`}
-            fill="none"
-            className={cn('transition-colors', stringClass)}
-            strokeWidth={STRING_WIDTH[i]}
-            strokeLinecap="round"
-          />
+          <g key={s.note + i}>
+            <polyline
+              points={`${nutX},${BOTTOM_Y} ${nutX},${NUT_Y} ${post[0]},${post[1]}`}
+              fill="none"
+              className={cn('transition-colors', stringClass)}
+              strokeWidth={STRING_WIDTH[i]}
+              strokeLinecap="round"
+            />
+            {/* String post */}
+            <circle
+              cx={post[0]}
+              cy={post[1]}
+              r={4.5}
+              className={cn('transition-colors fill-card', stringClass)}
+              strokeWidth={2}
+            />
+          </g>
         )
       })}
 
@@ -413,6 +447,7 @@ function GuitarHeadstock({
               ? 'fill-accent-teal'
               : 'fill-muted-foreground'
 
+        const [pegX, pegY] = PEG_LAYOUT[i].peg
         return (
           <g
             key={s.note + i}
@@ -430,15 +465,15 @@ function GuitarHeadstock({
             }}
           >
             <circle
-              cx={PEG_X[i]}
-              cy={HEADSTOCK_PEG_Y}
+              cx={pegX}
+              cy={pegY}
               r={19}
               className={cn('transition-colors', pegClass)}
               strokeWidth={selected ? 2.5 : 1.5}
             />
             <text
-              x={PEG_X[i]}
-              y={HEADSTOCK_PEG_Y}
+              x={pegX}
+              y={pegY}
               textAnchor="middle"
               dominantBaseline="central"
               fontSize={17}
@@ -448,10 +483,10 @@ function GuitarHeadstock({
               {s.noteName}
             </text>
             <text
-              x={PEG_X[i]}
-              y={HEADSTOCK_PEG_Y + 34}
+              x={pegX}
+              y={pegY + 32}
               textAnchor="middle"
-              fontSize={12}
+              fontSize={11}
               className="fill-muted-foreground pointer-events-none"
             >
               {s.stringNumber}번
