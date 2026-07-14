@@ -36,7 +36,7 @@ const FEATURES: Feature[] = [
     icon: Timer,
     title: '메트로놈',
     description: 'BPM과 박자를 설정해 리듬 연습을 합니다.',
-    href: null,
+    href: '/metronome',
     accent: 'bg-accent-orange/15 text-accent-orange border-accent-orange/30',
   },
 ]
