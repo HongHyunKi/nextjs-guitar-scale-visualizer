@@ -31,27 +31,41 @@ type TuningId =
   | 'open-g'
   | 'open-d'
 
-// midi는 저음(6번 줄)→고음(1번 줄) 순서. 하프 스텝 다운은 관례상 플랫(Eb Ab Db…)으로
+// 실제 튜너 앱(GuitarTuna, Fender Tune)의 관례를 따른다: 스탠다드가 기본이고,
+// 다운 튜닝(하프 다운/1음 다운) → 드롭 튜닝 → 오픈 튜닝 순으로 그룹핑한다.
+// midi는 저음(6번 줄)→고음(1번 줄) 순서. 하프 다운은 관례상 플랫(Eb Ab Db…)으로
 // 표기하므로 useFlat으로 표기 배열을 바꾼다.
-const TUNINGS: {
+type Tuning = {
   id: TuningId
   label: string
+  group: '기본' | '다운 튜닝' | '드롭 튜닝' | '오픈 튜닝'
   midi: number[]
   useFlat?: boolean
-}[] = [
-  { id: 'standard', label: '스탠다드 (E A D G B E)', midi: [...STANDARD_TUNING_MIDI].reverse() },
-  { id: 'half-step-down', label: '하프 스텝 다운 (Eb Ab Db Gb Bb Eb)', midi: [39, 44, 49, 54, 58, 63], useFlat: true },
-  { id: 'whole-step-down', label: '홀 스텝 다운 (D G C F A D)', midi: [38, 43, 48, 53, 57, 62] },
-  { id: 'drop-d', label: '드롭 D (D A D G B E)', midi: [38, 45, 50, 55, 59, 64] },
-  { id: 'drop-c', label: '드롭 C (C G C F A D)', midi: [36, 43, 48, 53, 57, 62] },
-  { id: 'dadgad', label: 'DADGAD (D A D G A D)', midi: [38, 45, 50, 55, 57, 62] },
-  { id: 'open-g', label: '오픈 G (D G D G B D)', midi: [38, 43, 50, 55, 59, 62] },
-  { id: 'open-d', label: '오픈 D (D A D F# A D)', midi: [38, 45, 50, 54, 57, 62] },
+}
+
+const TUNINGS: Tuning[] = [
+  { id: 'standard', label: '스탠다드', group: '기본', midi: [...STANDARD_TUNING_MIDI].reverse() },
+  { id: 'half-step-down', label: '하프 다운 (반음 ↓)', group: '다운 튜닝', midi: [39, 44, 49, 54, 58, 63], useFlat: true },
+  { id: 'whole-step-down', label: '1음 다운 (온음 ↓)', group: '다운 튜닝', midi: [38, 43, 48, 53, 57, 62] },
+  { id: 'drop-d', label: '드롭 D', group: '드롭 튜닝', midi: [38, 45, 50, 55, 59, 64] },
+  { id: 'drop-c', label: '드롭 C', group: '드롭 튜닝', midi: [36, 43, 48, 53, 57, 62] },
+  { id: 'open-g', label: '오픈 G', group: '오픈 튜닝', midi: [38, 43, 50, 55, 59, 62] },
+  { id: 'open-d', label: '오픈 D', group: '오픈 튜닝', midi: [38, 45, 50, 54, 57, 62] },
+  { id: 'dadgad', label: 'DADGAD', group: '오픈 튜닝', midi: [38, 45, 50, 55, 57, 62] },
 ]
 
-// 헤드스톡 GUI는 저음(6번, 왼쪽)→고음(1번, 오른쪽) 순서로 그린다 — 실제 기타 줄
-// 번호(1번=가는 고음현 ~ 6번=굵은 저음현)를 함께 붙여 음이름을 몰라도 번호만으로
-// 선택할 수 있게 한다.
+const TUNING_GROUPS = ['기본', '다운 튜닝', '드롭 튜닝', '오픈 튜닝'] as const
+
+// 옵션에 표시할 현 구성(예: "E A D G B E")은 midi에서 파생한다 — 하드코딩 금지.
+function tuningNotesLabel(tuning: Tuning) {
+  return buildStrings(tuning)
+    .map(s => s.noteName)
+    .join(' ')
+}
+
+// 헤드스톡 GUI는 저음(6번, 왼쪽)→고음(1번, 오른쪽) 순서로 그린다 — 페그의 메인
+// 라벨은 튜닝의 음이름(E A D G B E …)이고, 줄 번호(1번=가는 고음현 ~ 6번=굵은
+// 저음현)는 보조 라벨로 붙인다.
 function buildStrings(tuning: (typeof TUNINGS)[number]) {
   const noteNames = tuning.useFlat ? NOTES_FLAT : CHROMATIC_NOTES
   return tuning.midi.map((midi, i) => {
@@ -59,6 +73,7 @@ function buildStrings(tuning: (typeof TUNINGS)[number]) {
     const octave = Math.floor(midi / 12) - 1
     return {
       midi,
+      noteName: noteNames[noteIndex],
       note: `${noteNames[noteIndex]}${octave}`,
       stringNumber: 6 - i,
     }
@@ -183,7 +198,9 @@ export function Tuner() {
       color: 'text-muted-foreground',
     },
     'awaiting-input': {
-      heading: selectedString ? `${selectedString.stringNumber}번 줄` : '',
+      heading: selectedString
+        ? `${selectedString.noteName} (${selectedString.stringNumber}번 줄)`
+        : '',
       sub:
         micState === 'listening'
           ? '줄을 연주해보세요'
@@ -192,7 +209,7 @@ export function Tuner() {
     },
     'in-tune': {
       heading: '정확해요!',
-      sub: `${selectedString?.stringNumber}번 줄이 잘 맞았어요`,
+      sub: `${selectedString?.noteName} (${selectedString?.stringNumber}번 줄)이 잘 맞았어요`,
       color: 'text-accent-teal',
     },
     flat: {
@@ -214,6 +231,29 @@ export function Tuner() {
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-8">
+      {/* Tuning selector — 실제 튜너 앱처럼 최상단에서 튜닝을 먼저 고른다. 기본은 스탠다드(EADGBE). */}
+      <div className="flex flex-col items-center gap-1.5">
+        <label htmlFor="tuning-select" className="text-xs text-muted-foreground">
+          튜닝
+        </label>
+        <select
+          id="tuning-select"
+          value={tuningId}
+          onChange={e => setTuningId(e.target.value as TuningId)}
+          className="bg-muted text-foreground text-sm font-semibold text-center rounded-lg px-4 py-2.5 border-0 outline-none focus:ring-1 focus:ring-accent-teal cursor-pointer"
+        >
+          {TUNING_GROUPS.map(group => (
+            <optgroup key={group} label={group}>
+              {TUNINGS.filter(t => t.group === group).map(t => (
+                <option key={t.id} value={t.id}>
+                  {t.label} · {tuningNotesLabel(t)}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </div>
+
       {/* Status display */}
       <div className="flex flex-col items-center gap-3 py-4 min-h-[9.5rem] justify-center">
         <h2 className={cn('text-3xl md:text-4xl font-bold text-balance text-center transition-colors', copy.color)}>
@@ -282,24 +322,8 @@ export function Tuner() {
         )}
       </div>
 
-      {/* Guitar headstock — 줄 번호를 탭해서 튜닝할 줄을 선택한다 */}
+      {/* Guitar headstock — 페그(음이름)를 탭해서 튜닝할 줄을 선택한다 */}
       <div className="space-y-2">
-        <div className="flex justify-center">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            튜닝
-            <select
-              value={tuningId}
-              onChange={e => setTuningId(e.target.value as TuningId)}
-              className="bg-muted text-foreground text-sm rounded-md px-3 py-2 border-0 outline-none focus:ring-1 focus:ring-accent-teal cursor-pointer"
-            >
-              {TUNINGS.map(t => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
         <p className="text-xs text-muted-foreground text-center">
           튜닝할 줄을 선택하세요
         </p>
@@ -330,7 +354,7 @@ function GuitarHeadstock({
   status,
   onSelect,
 }: {
-  strings: { midi: number; note: string; stringNumber: number }[]
+  strings: { midi: number; noteName: string; note: string; stringNumber: number }[]
   selectedIndex: number | null
   status: Status
   onSelect: (i: number) => void
@@ -395,7 +419,7 @@ function GuitarHeadstock({
             role="button"
             tabIndex={0}
             aria-pressed={selected}
-            aria-label={`${s.stringNumber}번 줄 (${s.note}) 선택`}
+            aria-label={`${s.noteName} — ${s.stringNumber}번 줄 (${s.note}) 선택`}
             className="cursor-pointer outline-none"
             onClick={() => onSelect(i)}
             onKeyDown={e => {
@@ -417,21 +441,20 @@ function GuitarHeadstock({
               y={HEADSTOCK_PEG_Y}
               textAnchor="middle"
               dominantBaseline="central"
-              fontSize={16}
+              fontSize={17}
               fontWeight={700}
               className={cn('transition-colors pointer-events-none', textClass)}
             >
-              {s.stringNumber}번
+              {s.noteName}
             </text>
             <text
               x={PEG_X[i]}
               y={HEADSTOCK_PEG_Y + 34}
               textAnchor="middle"
-              fontSize={13}
+              fontSize={12}
               className="fill-muted-foreground pointer-events-none"
-              fontFamily="var(--font-mono, monospace)"
             >
-              {s.note}
+              {s.stringNumber}번
             </text>
           </g>
         )
