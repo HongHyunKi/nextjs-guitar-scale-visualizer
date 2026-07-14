@@ -303,29 +303,35 @@ export function Metronome() {
           {currentBeat === null ? bpm : currentBeat + 1}
         </motion.div>
 
+        {/* 도트는 항상 같은 박스 크기(w-4 h-4)를 유지하고 transform/opacity로만
+            애니메이션한다 — width/height를 직접 바꾸면 매 비트마다 레이아웃이
+            재계산되어 CLS(레이아웃 시프트)가 발생한다. */}
         <div className="flex items-center gap-3">
           {Array.from({ length: beatsPerBar }, (_, i) => {
             const active = isPlaying && currentBeat === i
             return (
-              <div
+              <motion.div
                 key={i}
+                animate={{ scale: active ? 1 : 0.7, opacity: active ? 1 : 0.35 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
                 className={cn(
-                  'rounded-full transition-all',
+                  'w-4 h-4 rounded-full',
                   active
                     ? i === 0
-                      ? 'w-4 h-4 bg-accent-orange shadow-md shadow-accent-orange/40'
-                      : 'w-4 h-4 bg-accent-teal shadow-md shadow-accent-teal/40'
-                    : 'w-3 h-3 bg-muted-foreground/30'
+                      ? 'bg-accent-orange shadow-md shadow-accent-orange/40'
+                      : 'bg-accent-teal shadow-md shadow-accent-teal/40'
+                    : 'bg-muted-foreground/30'
                 )}
               />
             )
           })}
         </div>
 
+        {/* 고정 너비 — Start/Stop 라벨 길이가 달라도 버튼 박스가 리사이즈되지 않도록 */}
         <button
           onClick={handleTogglePlay}
           className={cn(
-            'px-8 py-3 rounded-lg text-base font-semibold transition-all',
+            'w-32 py-3 rounded-lg text-base font-semibold transition-all inline-flex items-center justify-center',
             isPlaying
               ? 'bg-accent-orange text-background hover:opacity-90'
               : 'bg-accent-teal text-background hover:opacity-90'
