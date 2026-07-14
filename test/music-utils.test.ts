@@ -109,6 +109,12 @@ const SCALE_INTERVALS: Record<ScaleType, number[]> = {
   minor: [0, 2, 3, 5, 7, 8, 10],
   'major-pentatonic': [0, 2, 4, 7, 9],
   'minor-pentatonic': [0, 3, 5, 7, 10],
+  dorian: [0, 2, 3, 5, 7, 9, 10],
+  mixolydian: [0, 2, 4, 5, 7, 9, 10],
+  lydian: [0, 2, 4, 6, 7, 9, 11],
+  phrygian: [0, 1, 3, 5, 7, 8, 10],
+  'harmonic-minor': [0, 2, 3, 5, 7, 8, 11],
+  'melodic-minor': [0, 2, 3, 5, 7, 9, 11],
 }
 
 const SCALE_NOTE_COUNT: Record<ScaleType, number> = {
@@ -116,16 +122,30 @@ const SCALE_NOTE_COUNT: Record<ScaleType, number> = {
   minor: 7,
   'major-pentatonic': 5,
   'minor-pentatonic': 5,
+  dorian: 7,
+  mixolydian: 7,
+  lydian: 7,
+  phrygian: 7,
+  'harmonic-minor': 7,
+  'melodic-minor': 7,
 }
+
+const ALL_SCALE_TYPES: ScaleType[] = [
+  'major',
+  'minor',
+  'major-pentatonic',
+  'minor-pentatonic',
+  'dorian',
+  'mixolydian',
+  'lydian',
+  'phrygian',
+  'harmonic-minor',
+  'melodic-minor',
+]
 
 describe('getScaleNotes', () => {
   describe('note count', () => {
-    const scaleTypes: ScaleType[] = [
-      'major',
-      'minor',
-      'major-pentatonic',
-      'minor-pentatonic',
-    ]
+    const scaleTypes: ScaleType[] = ALL_SCALE_TYPES
     scaleTypes.forEach(scaleType => {
       it(`${scaleType} always returns ${SCALE_NOTE_COUNT[scaleType]} notes`, () => {
         ALL_ROOTS.forEach(root => {
@@ -137,12 +157,7 @@ describe('getScaleNotes', () => {
   })
 
   describe('root note is first element', () => {
-    const scaleTypes: ScaleType[] = [
-      'major',
-      'minor',
-      'major-pentatonic',
-      'minor-pentatonic',
-    ]
+    const scaleTypes: ScaleType[] = ALL_SCALE_TYPES
     scaleTypes.forEach(scaleType => {
       it(`${scaleType}: first note matches root`, () => {
         ALL_ROOTS.forEach(root => {
@@ -154,12 +169,7 @@ describe('getScaleNotes', () => {
   })
 
   describe('sharp/flat consistency (no mixing within a scale)', () => {
-    const scaleTypes: ScaleType[] = [
-      'major',
-      'minor',
-      'major-pentatonic',
-      'minor-pentatonic',
-    ]
+    const scaleTypes: ScaleType[] = ALL_SCALE_TYPES
     scaleTypes.forEach(scaleType => {
       it(`${scaleType}: no scale mixes sharps and flats`, () => {
         ALL_ROOTS.forEach(root => {
@@ -173,12 +183,7 @@ describe('getScaleNotes', () => {
   })
 
   describe('chromatic index correctness — all 12 roots × 4 scales', () => {
-    const scaleTypes: ScaleType[] = [
-      'major',
-      'minor',
-      'major-pentatonic',
-      'minor-pentatonic',
-    ]
+    const scaleTypes: ScaleType[] = ALL_SCALE_TYPES
     scaleTypes.forEach(scaleType => {
       it(`${scaleType}: all notes at correct chromatic index`, () => {
         ALL_ROOTS.forEach(root => {
@@ -297,6 +302,44 @@ describe('getScaleNotes', () => {
     })
   })
 
+  describe('reference values for modes/harmonic/melodic minor', () => {
+    it('D dorian: D E F G A B C', () => {
+      expect(getScaleNotes('D', 'dorian')).toEqual([
+        'D', 'E', 'F', 'G', 'A', 'B', 'C',
+      ])
+    })
+
+    it('G mixolydian: G A B C D E F', () => {
+      expect(getScaleNotes('G', 'mixolydian')).toEqual([
+        'G', 'A', 'B', 'C', 'D', 'E', 'F',
+      ])
+    })
+
+    it('F lydian: F G A B C D E', () => {
+      expect(getScaleNotes('F', 'lydian')).toEqual([
+        'F', 'G', 'A', 'B', 'C', 'D', 'E',
+      ])
+    })
+
+    it('E phrygian: E F G A B C D', () => {
+      expect(getScaleNotes('E', 'phrygian')).toEqual([
+        'E', 'F', 'G', 'A', 'B', 'C', 'D',
+      ])
+    })
+
+    it('A harmonic minor: A B C D E F G#', () => {
+      expect(getScaleNotes('A', 'harmonic-minor')).toEqual([
+        'A', 'B', 'C', 'D', 'E', 'F', 'G#',
+      ])
+    })
+
+    it('A melodic minor (ascending): A B C D E F# G#', () => {
+      expect(getScaleNotes('A', 'melodic-minor')).toEqual([
+        'A', 'B', 'C', 'D', 'E', 'F#', 'G#',
+      ])
+    })
+  })
+
   describe('enharmonic pair equivalence', () => {
     const pairs: [string, string][] = [
       ['C#', 'Db'],
@@ -305,12 +348,7 @@ describe('getScaleNotes', () => {
       ['G#', 'Ab'],
       ['A#', 'Bb'],
     ]
-    const scaleTypes: ScaleType[] = [
-      'major',
-      'minor',
-      'major-pentatonic',
-      'minor-pentatonic',
-    ]
+    const scaleTypes: ScaleType[] = ALL_SCALE_TYPES
 
     pairs.forEach(([sharp, flat]) => {
       scaleTypes.forEach(scaleType => {

@@ -46,7 +46,7 @@ const INTERVAL_MAP: Record<number, string> = {
   3: '♭3',
   4: '3',
   5: '4',
-  6: '♭5',
+  6: '#4', // only reached by Lydian in this catalog — raised 4th, not a flat 5th
   7: '5',
   8: '♭6',
   9: '6',
@@ -60,6 +60,20 @@ export type ScaleType =
   | 'minor'
   | 'major-pentatonic'
   | 'minor-pentatonic'
+  | 'dorian'
+  | 'mixolydian'
+  | 'lydian'
+  | 'phrygian'
+  | 'harmonic-minor'
+  | 'melodic-minor'
+
+// Scale types surfaced as primary buttons in the UI; the rest live behind "더보기".
+export const MAIN_SCALE_TYPES: ScaleType[] = [
+  'major',
+  'minor',
+  'major-pentatonic',
+  'minor-pentatonic',
+]
 
 // Scale type labels
 export const SCALE_LABELS: Record<ScaleType, string> = {
@@ -67,6 +81,26 @@ export const SCALE_LABELS: Record<ScaleType, string> = {
   minor: 'Minor Scale',
   'major-pentatonic': 'Major Pentatonic',
   'minor-pentatonic': 'Minor Pentatonic',
+  dorian: 'Dorian',
+  mixolydian: 'Mixolydian',
+  lydian: 'Lydian',
+  phrygian: 'Phrygian',
+  'harmonic-minor': 'Harmonic Minor',
+  'melodic-minor': 'Melodic Minor',
+}
+
+// Major- vs minor-character scale, used to pick sharp/flat spelling (shouldUseFlat).
+export const SCALE_CHARACTER: Record<ScaleType, 'major' | 'minor'> = {
+  major: 'major',
+  minor: 'minor',
+  'major-pentatonic': 'major',
+  'minor-pentatonic': 'minor',
+  dorian: 'minor',
+  mixolydian: 'major',
+  lydian: 'major',
+  phrygian: 'minor',
+  'harmonic-minor': 'minor',
+  'melodic-minor': 'minor',
 }
 
 // All notes in chromatic order (sharp notation) — canonical reference
@@ -146,6 +180,24 @@ const MAJOR_PENTATONIC_INTERVALS = [0, 2, 4, 7, 9]
 // Minor Pentatonic scale intervals - 1, b3, 4, 5, b7
 const MINOR_PENTATONIC_INTERVALS = [0, 3, 5, 7, 10]
 
+// Dorian intervals - 1, 2, b3, 4, 5, 6, b7
+const DORIAN_INTERVALS = [0, 2, 3, 5, 7, 9, 10]
+
+// Mixolydian intervals - 1, 2, 3, 4, 5, 6, b7
+const MIXOLYDIAN_INTERVALS = [0, 2, 4, 5, 7, 9, 10]
+
+// Lydian intervals - 1, 2, 3, #4, 5, 6, 7
+const LYDIAN_INTERVALS = [0, 2, 4, 6, 7, 9, 11]
+
+// Phrygian intervals - 1, b2, b3, 4, 5, b6, b7
+const PHRYGIAN_INTERVALS = [0, 1, 3, 5, 7, 8, 10]
+
+// Harmonic Minor intervals - 1, 2, b3, 4, 5, b6, 7
+const HARMONIC_MINOR_INTERVALS = [0, 2, 3, 5, 7, 8, 11]
+
+// Melodic Minor intervals (ascending form) - 1, 2, b3, 4, 5, 6, 7
+const MELODIC_MINOR_INTERVALS = [0, 2, 3, 5, 7, 9, 11]
+
 export function getNoteIndex(note: string): number {
   const sharp = FLAT_TO_SHARP[note] ?? note
   return CHROMATIC_NOTES.indexOf(sharp)
@@ -168,8 +220,7 @@ function shouldUseFlat(rootNote: string, isMinor: boolean): boolean {
 // Exported helper: determines flat/sharp notation for a root+scale combination.
 // Use this in rendering code to stay consistent with getScaleNotes.
 export function isScaleFlat(rootNote: string, scaleType: ScaleType): boolean {
-  const isMinor = scaleType === 'minor' || scaleType === 'minor-pentatonic'
-  return shouldUseFlat(rootNote, isMinor)
+  return shouldUseFlat(rootNote, SCALE_CHARACTER[scaleType] === 'minor')
 }
 
 export function noteToSolfege(note: string, rootNote: string): string {
@@ -197,31 +248,45 @@ export function getScaleNotes(
   const rootIndex = getNoteIndex(rootNote)
 
   let intervals: number[]
-  let isMinor: boolean
 
   switch (scaleType) {
     case 'major':
       intervals = MAJOR_INTERVALS
-      isMinor = false
       break
     case 'minor':
       intervals = MINOR_INTERVALS
-      isMinor = true
       break
     case 'major-pentatonic':
       intervals = MAJOR_PENTATONIC_INTERVALS
-      isMinor = false
       break
     case 'minor-pentatonic':
       intervals = MINOR_PENTATONIC_INTERVALS
-      isMinor = true
+      break
+    case 'dorian':
+      intervals = DORIAN_INTERVALS
+      break
+    case 'mixolydian':
+      intervals = MIXOLYDIAN_INTERVALS
+      break
+    case 'lydian':
+      intervals = LYDIAN_INTERVALS
+      break
+    case 'phrygian':
+      intervals = PHRYGIAN_INTERVALS
+      break
+    case 'harmonic-minor':
+      intervals = HARMONIC_MINOR_INTERVALS
+      break
+    case 'melodic-minor':
+      intervals = MELODIC_MINOR_INTERVALS
       break
     default:
       intervals = MAJOR_INTERVALS
-      isMinor = false
   }
 
-  const notesArray = shouldUseFlat(rootNote, isMinor) ? NOTES_FLAT : NOTES_SHARP
+  const notesArray = shouldUseFlat(rootNote, SCALE_CHARACTER[scaleType] === 'minor')
+    ? NOTES_FLAT
+    : NOTES_SHARP
 
   return intervals.map(interval => notesArray[(rootIndex + interval) % 12])
 }

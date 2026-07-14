@@ -3,10 +3,16 @@ import {
   getNoteIndex,
   isScaleFlat,
   ScaleType,
+  SCALE_CHARACTER,
   CHROMATIC_NOTES,
 } from '@/lib/music-utils'
 
-export type ChordQuality = 'major' | 'minor' | 'diminished' | 'dominant7'
+export type ChordQuality =
+  | 'major'
+  | 'minor'
+  | 'diminished'
+  | 'augmented'
+  | 'dominant7'
 export type BackingStyle = 'rock' | 'blues' | 'jazz'
 
 export interface Chord {
@@ -27,27 +33,13 @@ const CHORD_INTERVALS: Record<ChordQuality, number[]> = {
   major: [0, 4, 7],
   minor: [0, 3, 7],
   diminished: [0, 3, 6],
+  augmented: [0, 4, 8],
   dominant7: [0, 4, 7, 10],
 }
 
-const MAJOR_DIATONIC_QUALITIES: ChordQuality[] = [
-  'major',
-  'minor',
-  'minor',
-  'major',
-  'major',
-  'minor',
-  'diminished',
-]
-const MINOR_DIATONIC_QUALITIES: ChordQuality[] = [
-  'minor',
-  'diminished',
-  'major',
-  'minor',
-  'minor',
-  'major',
-  'major',
-]
+// Pentatonic scales skip degrees, so triads can't be derived by stacking
+// scale-degree thirds the way 7-note (diatonic) scales can — kept as a
+// curated approximation.
 const MAJOR_PENT_QUALITIES: ChordQuality[] = [
   'major',
   'minor',
@@ -63,10 +55,59 @@ const MINOR_PENT_QUALITIES: ChordQuality[] = [
   'major',
 ]
 
-const MAJOR_NUMERALS = ['I', 'IIm', 'IIIm', 'IV', 'V', 'VIm', 'VIIdim']
-const MINOR_NUMERALS = ['Im', 'IIdim', 'IIIb', 'IVm', 'Vm', 'VIb', 'VIIb']
 const MAJOR_PENT_NUMERALS = ['I', 'IIm', 'IIIm', 'V', 'VIm']
 const MINOR_PENT_NUMERALS = ['Im', 'IIIb', 'IVm', 'Vm', 'VIIb']
+
+const PENTATONIC_TYPES = new Set<ScaleType>([
+  'major-pentatonic',
+  'minor-pentatonic',
+])
+
+// Reference degree intervals (major scale) used only to label accidentals —
+// e.g. natural minor's b3 is expressed as "IIIb" relative to this baseline.
+const MAJOR_REFERENCE_INTERVALS = [0, 2, 4, 5, 7, 9, 11]
+const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
+const QUALITY_SUFFIX: Record<ChordQuality, string> = {
+  major: '',
+  minor: 'm',
+  diminished: 'dim',
+  augmented: 'aug',
+  dominant7: '7',
+}
+
+function tripleQuality(thirdInterval: number, fifthInterval: number): ChordQuality {
+  if (thirdInterval === 4 && fifthInterval === 7) return 'major'
+  if (thirdInterval === 3 && fifthInterval === 7) return 'minor'
+  if (thirdInterval === 3 && fifthInterval === 6) return 'diminished'
+  if (thirdInterval === 4 && fifthInterval === 8) return 'augmented'
+  return thirdInterval >= 4 ? 'major' : 'minor'
+}
+
+// Derives diatonic triads for any 7-note scale by stacking scale-degree
+// thirds (root, +2 degrees, +4 degrees) — works uniformly for major, minor,
+// the modes, and harmonic/melodic minor without a hardcoded table per scale.
+function buildDiatonicTriads(
+  scaleNotes: string[]
+): { quality: ChordQuality; numeral: string }[] {
+  const n = scaleNotes.length
+  const tonicIdx = getNoteIndex(scaleNotes[0])
+
+  return scaleNotes.map((note, i) => {
+    const rootIdx = getNoteIndex(note)
+    const thirdIdx = getNoteIndex(scaleNotes[(i + 2) % n])
+    const fifthIdx = getNoteIndex(scaleNotes[(i + 4) % n])
+    const thirdInterval = (thirdIdx - rootIdx + 12) % 12
+    const fifthInterval = (fifthIdx - rootIdx + 12) % 12
+    const quality = tripleQuality(thirdInterval, fifthInterval)
+
+    const degreeInterval = (rootIdx - tonicIdx + 12) % 12
+    const diff = degreeInterval - MAJOR_REFERENCE_INTERVALS[i]
+    const accidental = diff === -1 ? 'b' : diff === 1 ? '#' : ''
+    const numeral = `${ROMAN_NUMERALS[i]}${accidental}${QUALITY_SUFFIX[quality]}`
+
+    return { quality, numeral }
+  })
+}
 
 const NOTES_FLAT = [
   'C',
@@ -118,36 +159,28 @@ export function getDiatonicChords(
   const scaleNotes = getScaleNotes(rootNote, scaleType)
   const useFlat = isScaleFlat(rootNote, scaleType)
 
-  let qualities: ChordQuality[]
-  let numerals: string[]
-
-  switch (scaleType) {
-    case 'major':
-      qualities = MAJOR_DIATONIC_QUALITIES
-      numerals = MAJOR_NUMERALS
-      break
-    case 'minor':
-      qualities = MINOR_DIATONIC_QUALITIES
-      numerals = MINOR_NUMERALS
-      break
-    case 'major-pentatonic':
-      qualities = MAJOR_PENT_QUALITIES
-      numerals = MAJOR_PENT_NUMERALS
-      break
-    case 'minor-pentatonic':
-    default:
-      qualities = MINOR_PENT_QUALITIES
-      numerals = MINOR_PENT_NUMERALS
-      break
+  let diatonics: { quality: ChordQuality; numeral: string }[]
+  if (scaleType === 'major-pentatonic') {
+    diatonics = MAJOR_PENT_QUALITIES.map((quality, i) => ({
+      quality,
+      numeral: MAJOR_PENT_NUMERALS[i],
+    }))
+  } else if (scaleType === 'minor-pentatonic') {
+    diatonics = MINOR_PENT_QUALITIES.map((quality, i) => ({
+      quality,
+      numeral: MINOR_PENT_NUMERALS[i],
+    }))
+  } else {
+    diatonics = buildDiatonicTriads(scaleNotes)
   }
 
   const chords: Chord[] = scaleNotes.map((note, i) => {
-    const quality = qualities[i]
+    const { quality, numeral } = diatonics[i]
     const notes = buildChordNotes(note, quality, useFlat)
     return {
       root: note,
       quality,
-      numeral: numerals[i],
+      numeral,
       notes,
       midiNotes: buildMidiNotes(notes),
     }
@@ -161,6 +194,7 @@ export function getChordLabel(chord: Chord): string {
     major: 'maj',
     minor: 'm',
     diminished: 'dim',
+    augmented: 'aug',
     dominant7: '7',
   }
   return `${chord.root}${suffix[chord.quality]}`
@@ -170,9 +204,8 @@ export function getStyleProgression(
   style: BackingStyle,
   scaleType: ScaleType
 ): number[] {
-  const isPent =
-    scaleType === 'major-pentatonic' || scaleType === 'minor-pentatonic'
-  const isMinor = scaleType === 'minor' || scaleType === 'minor-pentatonic'
+  const isPent = PENTATONIC_TYPES.has(scaleType)
+  const isMinor = SCALE_CHARACTER[scaleType] === 'minor'
 
   if (isPent) {
     return isMinor
