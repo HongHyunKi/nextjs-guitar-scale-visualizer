@@ -56,7 +56,7 @@ export default function Page() {
                 Guitar ScaleUp
               </h1>
               <p className="text-muted-foreground text-sm">
-                방구석 기타리스트를 위한 스케일 시각화
+                스케일 연습을 더 쉽고 정확하게
               </p>
             </div>
           </Link>

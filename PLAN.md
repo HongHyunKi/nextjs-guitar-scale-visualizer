@@ -1,6 +1,6 @@
 # Guitar ScaleUp — 로드맵
 
-> "방구석 기타리스트를 위한 연습 도구 모음" — 일렉기타 연습에 필요한 기능을 하나씩 추가해나가는 멀티 툴 허브.
+> "기타 연습을 더 쉽고 정확하게" — 일렉기타 연습에 필요한 기능을 하나씩 추가해나가는 멀티 툴 허브.
 > 새 기능 추가 시 `app/page.tsx`의 `FEATURES` 배열과 `app/<feature>/page.tsx` 라우트를 함께 만든다. 스타일은 `DESIGN.md`, 음악 이론 로직은 `lib/music-utils.ts`가 authoritative.
 
 ## 완료

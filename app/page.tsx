@@ -71,7 +71,7 @@ export default function Home() {
               Guitar ScaleUp
             </h1>
             <p className="text-base text-muted-foreground max-w-md text-balance">
-              방구석 기타리스트를 위한 연습 도구 모음
+              기타 연습을 더 쉽고 정확하게
             </p>
           </motion.div>
 
