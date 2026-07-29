@@ -28,7 +28,9 @@ components/
 lib/
   music-utils.ts        — ALL music theory logic (single source of truth)
   caged-utils.ts        — CAGED system shape ranges
-  scale-tests.ts        — runnable test script (npx tsx lib/scale-tests.ts)
+  scale-tests.ts        — legacy test script, kept for reference only
+test/
+  music-utils.test.ts   — canonical test suite (run via `pnpm test`)
 docs/
   pentatonic-scale-spec.md — original spec for scale implementation
 DESIGN.md               — design system (authoritative for ALL UI styling)
@@ -89,60 +91,24 @@ if natural root:
 
 ### Currently Implemented
 
-| ScaleType          | Intervals (semitones) | Formula          |
-| ------------------ | --------------------- | ---------------- |
-| `major`            | [0,2,4,5,7,9,11]      | 1 2 3 4 5 6 7    |
-| `minor`            | [0,2,3,5,7,8,10]      | 1 2 b3 4 5 b6 b7 |
-| `major-pentatonic` | [0,2,4,7,9]           | 1 2 3 5 6        |
-| `minor-pentatonic` | [0,3,5,7,10]          | 1 b3 4 5 b7      |
+| ScaleType          | Intervals (semitones) | Formula           |
+| ------------------- | --------------------- | ------------------ |
+| `major`            | [0,2,4,5,7,9,11]      | 1 2 3 4 5 6 7      |
+| `minor`            | [0,2,3,5,7,8,10]      | 1 2 b3 4 5 b6 b7   |
+| `major-pentatonic` | [0,2,4,7,9]           | 1 2 3 5 6          |
+| `minor-pentatonic` | [0,3,5,7,10]          | 1 b3 4 5 b7        |
+| `dorian`           | [0,2,3,5,7,9,10]      | 1 2 b3 4 5 6 b7    |
+| `mixolydian`       | [0,2,4,5,7,9,10]      | 1 2 3 4 5 6 b7     |
+| `lydian`           | [0,2,4,6,7,9,11]      | 1 2 3 #4 5 6 7     |
+| `phrygian`         | [0,1,3,5,7,8,10]      | 1 b2 b3 4 5 b6 b7  |
+| `harmonic-minor`   | [0,2,3,5,7,8,11]      | 1 2 b3 4 5 b6 7    |
+| `melodic-minor`    | [0,2,3,5,7,9,11]      | 1 2 b3 4 5 6 7     |
 
-### Planned — Add in This Order
-
-| Scale          | Intervals (semitones) | Formula           | Genre Context                      |
-| -------------- | --------------------- | ----------------- | ---------------------------------- |
-| Dorian         | [0,2,3,5,7,9,10]      | 1 2 b3 4 5 6 b7   | Blues, Jazz, Funk — essential      |
-| Mixolydian     | [0,2,4,5,7,9,10]      | 1 2 3 4 5 6 b7    | Dominant 7th chords, Rock, Country |
-| Lydian         | [0,2,4,6,7,9,11]      | 1 2 3 #4 5 6 7    | Film scores, dreamy/ethereal sound |
-| Phrygian       | [0,1,3,5,7,8,10]      | 1 b2 b3 4 5 b6 b7 | Metal, Flamenco, Spanish           |
-| Harmonic Minor | [0,2,3,5,7,8,11]      | 1 2 b3 4 5 b6 7   | Neo-classical Metal, Classical     |
-| Melodic Minor  | [0,2,3,5,7,9,11]      | 1 2 b3 4 5 6 7    | Modern Jazz — ascending form only  |
-
-**Implementation checklist for each new scale:**
-
-1. Add interval constant in `lib/music-utils.ts` (e.g., `const DORIAN_INTERVALS = [...]`)
-2. Add to `ScaleType` union type
-3. Add to `SCALE_LABELS` record
-4. Add case in `getScaleNotes` switch with correct `isMinor` value
-5. Add UI button in `components/scale-selector.tsx`
-6. Add comprehensive test cases in `lib/scale-tests.ts` covering all 12 roots
+See "Adding a New Scale — Step-by-Step" below for the checklist to follow when extending this catalog.
 
 ---
 
-## Known Bugs and Constraints
-
-### BUG: Fretboard Note Matching Mismatch (rendering bug)
-
-**File:** `components/fretboard.tsx` line 123
-
-```typescript
-// CURRENT (broken):
-const useFlat = scaleType.includes('minor') // ← hardcoded logic, independent of music-utils
-const note = getNoteFromFret(openString, fret, useFlat)
-const inScale = scaleNotes.includes(note) // ← string comparison fails on enharmonic mismatch
-```
-
-**Problem:** `getScaleNotes` now uses `shouldUseFlat` (root-aware), but `getNoteFromFret` in the fretboard uses a different rule. For sharp-rooted minor scales (e.g., D# minor pentatonic), `getScaleNotes` returns `['D#','F#','G#','A#','C#']` but the fretboard generates `'Gb'` for the same note — `'Gb'` is not in the scale array → note is not highlighted even though it should be.
-
-**Fix required:** Either:
-
-- (A) Export `shouldUseFlat` from `music-utils.ts` and use it in the fretboard, OR
-- (B) Compare notes by chromatic index instead of string equality:
-  ```typescript
-  const inScale = scaleNotes.some(n => getNoteIndex(n) === getNoteIndex(note))
-  ```
-  Option B is safer and eliminates the entire class of enharmonic mismatch bugs.
-
-**Until this is fixed, the fretboard renders incorrectly for any sharp-rooted minor-character scale.**
+## Design Notes
 
 ### Sharp/Flat Convention Gaps
 
@@ -166,10 +132,6 @@ pnpm test
 
 Tests live in `test/music-utils.test.ts` and run via Jest + ts-jest.
 The legacy `lib/scale-tests.ts` script is kept for reference but `pnpm test` is the canonical command.
-
-### Why the Current Tests Are Insufficient
-
-The current test script (`lib/scale-tests.ts`) only covers **5 roots × 2 scale types = 10 cases**. This is NOT enough to verify correctness across all 12 keys. Tests pass while real rendering has bugs (see fretboard bug above).
 
 ### Required Coverage for Any Scale
 
@@ -276,7 +238,7 @@ These should be tested as a pair.
 
 5. **Add UI** in `components/scale-selector.tsx`
 
-6. **Add tests** in `lib/scale-tests.ts` — all 12 roots required
+6. **Add tests** in `test/music-utils.test.ts` — all 12 roots required
 
 ---
 
