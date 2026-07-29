@@ -1,4 +1,4 @@
-import { Github, Mail } from 'lucide-react'
+import { Mail } from 'lucide-react'
 
 export function Footer() {
   return (
@@ -6,20 +6,10 @@ export function Footer() {
       <div className="max-w-7xl mx-auto py-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Guitar ScaleUp. All rights reserved.
+            © {new Date().getFullYear()} HongHyunKi. All rights reserved.
           </div>
 
           <div className="flex items-center gap-4">
-            <a
-              href="https://github.com/HongHyunKi/nextjs-guitar-scale-visualizer"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Github className="w-4 h-4" />
-              <span>GitHub</span>
-            </a>
-
             <a
               href="mailto:dev.hyunki@gmail.com"
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
