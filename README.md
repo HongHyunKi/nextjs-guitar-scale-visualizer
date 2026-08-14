@@ -1,95 +1,57 @@
 # Guitar ScaleUp
 
+기타 연습 도구 모음. 스케일, 코드사전, 메트로놈, 튜너를 한 웹앱에서 사용합니다.
+
 ![프리뷰](public/preview.png)
 
-## 소개
+## 기능
 
-"기타 연습을 더 쉽고 정확하게" — 기타 연습에 필요한 도구를 한 곳에 모은 인터랙티브 웹 애플리케이션입니다.
+### 스케일 연습 (`/guitar-scale`)
 
-## 주요 기능
+6현 프렛보드에 스케일을 시각화합니다. 5~24프렛까지 조절 가능하고, 메이저·마이너·펜타토닉·도리안·믹소리디안·리디안·프리지안·하모닉 마이너·멜로딕 마이너 10종을 지원합니다. CAGED 셰이프(C·A·G·E·D)별로 지판 구간을 나눠 볼 수 있고, 음을 눌러 소리를 들을 수 있습니다.
 
-### 🎸 스케일 연습 (`/guitar-scale`)
+### 코드사전 (`/chords`)
 
-- 6현 프렛보드 위에 스케일을 시각화 (5~24개 프렛까지 조절 가능)
-- 메이저·마이너·펜타토닉·도리안·믹소리디안·리디안·프리지안·하모닉 마이너·멜로딕 마이너까지 10종 스케일
-- CAGED 시스템 셰이프(C·A·G·E·D)별 지판 구간 하이라이트
-- 실시간 사운드 재생 (Tone.js)
-- 반응형 디자인으로 모바일 환경에서도 최적화
+코드 구성음과 운지법을 다이어그램으로 보여주고 소리로 들려줍니다.
 
-### 📖 코드사전 (`/chords`)
+### 메트로놈 (`/metronome`)
 
-- 코드 구성음과 운지법을 다이어그램으로 표시
-- 코드 사운드 재생
+BPM, 박자, 세분화를 조절할 수 있고 탭 템포와 사운드 6종을 지원합니다.
 
-### ⏱️ 메트로놈 (`/metronome`)
+### 튜너 (`/tuner`)
 
-- BPM·박자·세분화 조절, 탭 템포
-- 사운드 6종 지원
+마이크로 실시간 피치를 잡아 목표음 대비 편차를 보여줍니다. 헤드스톡 GUI에서 줄 번호(1~6번)만 고르면 되기 때문에 EADGBE 표기를 몰라도 튜닝할 수 있습니다. 튜닝 프리셋 8종을 지원합니다.
 
-### 🎯 튜너 (`/tuner`)
+### 표기법
 
-- 마이크로 실시간 피치를 감지해 편차(낮음/높음/정확) 표시
-- 6-인라인 헤드스톡 GUI에서 줄(1~6번) 선택 방식 — EADGBE를 몰라도 튜닝 가능
-- 8종 튜닝 프리셋 지원
-
-### 🎼 공통 표기법
-
-- **알파벳 표기** (C, D, E, F, G, A, B)
-- **계이름 표기** (도, 레, 미, 파, 솔, 라, 시)
-- **인터벌 표기** (1, 2, 3, 4, 5, 6, 7)
-- 12개 음계 모두 선택 가능하며, 선택한 표기법에 따라 자동으로 표시 전환
+알파벳(C, D, E...), 계이름(도, 레, 미...), 인터벌(1, 2, 3...) 세 가지 표기법을 전환할 수 있고, 루트 노트는 12음 전체를 선택할 수 있습니다.
 
 ## 기술 스택
 
-- **프레임워크**: Next.js 16 (App Router) · React 19
-- **스타일링**: Tailwind CSS 4
-- **UI 컴포넌트**: Radix UI
-- **애니메이션**: Framer Motion
-- **타입 안전성**: TypeScript
-- **오디오/피치 검출**: Tone.js, Web Audio API
+Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Radix UI, Framer Motion, Tone.js
 
 ## 시작하기
 
-### 설치
-
 ```bash
-# 의존성 설치
 pnpm install
-```
-
-### 개발 서버 실행
-
-```bash
 pnpm dev
 ```
 
-브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 확인할 수 있습니다.
-
-### 빌드
+`http://localhost:3000`에서 확인합니다.
 
 ```bash
-pnpm build
-```
-
-### 프로덕션 서버 실행
-
-```bash
-pnpm start
-```
-
-### 테스트
-
-```bash
-pnpm test
+pnpm build   # 프로덕션 빌드
+pnpm start   # 프로덕션 서버 실행
+pnpm test    # 테스트 실행
 ```
 
 ## 문서
 
-- [`CLAUDE.md`](CLAUDE.md) — 음악 이론 로직·스케일 카탈로그·테스트 요구사항 (authoritative)
-- [`DESIGN.md`](DESIGN.md) — 디자인 시스템 (authoritative)
-- [`PLAN.md`](PLAN.md) — 로드맵
-- [`docs/caged-system-spec.md`](docs/caged-system-spec.md) — CAGED 시스템 아키텍처 스펙
+- [CLAUDE.md](CLAUDE.md) — 음악 이론 로직, 스케일 카탈로그, 테스트 요구사항
+- [DESIGN.md](DESIGN.md) — 디자인 시스템
+- [PLAN.md](PLAN.md) — 로드맵
+- [docs/caged-system-spec.md](docs/caged-system-spec.md) — CAGED 시스템 아키텍처
 
 ## 크레딧
 
-- 기타 사운드 샘플: [tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments) (guitar-electric, guitar-acoustic) — 샘플 라이선스 [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/), © N. Brosowsky 및 원 샘플 제작자들. `public/samples/`에 mp3 일부를 포함.
+기타 사운드 샘플은 [tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments)(guitar-electric, guitar-acoustic)를 사용했습니다. 라이선스는 [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/), © N. Brosowsky 및 원 샘플 제작자. `public/samples/`에 mp3 일부 포함.
