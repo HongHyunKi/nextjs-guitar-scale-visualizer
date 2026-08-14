@@ -2,7 +2,15 @@
 
 import Link from 'next/link'
 import { motion, MotionConfig } from 'framer-motion'
-import { AudioLines, BookOpen, Gauge, Music, Timer, type LucideIcon } from 'lucide-react'
+import {
+  AudioLines,
+  BookOpen,
+  Disc3,
+  Gauge,
+  Music,
+  Timer,
+  type LucideIcon,
+} from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 type Feature = {
@@ -46,6 +54,14 @@ const FEATURES: Feature[] = [
     description: '마이크로 실시간 피치를 감지해 정확하게 튜닝합니다.',
     href: '/tuner',
     accent: 'bg-accent-green/15 text-accent-green border-accent-green/30',
+  },
+  {
+    id: 'jam-track',
+    icon: Disc3,
+    title: '잼 트랙',
+    description: '루트와 스케일을 고르고 스타일별 백킹 트랙에 맞춰 즉흥 연주합니다.',
+    href: '/jam-track',
+    accent: 'bg-accent-blue/15 text-accent-blue border-accent-blue/30',
   },
 ]
 

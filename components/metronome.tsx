@@ -5,6 +5,7 @@ import * as Tone from 'tone'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useBpmControl } from '@/hooks/use-bpm-control'
 
 type Subdivision = 'quarter' | 'eighth' | 'triplet' | 'sixteenth'
 
@@ -48,10 +49,36 @@ const MAX_BPM = 240
 const TAP_TIMEOUT_MS = 2000
 const TAP_HISTORY = 5
 
-export function Metronome() {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [bpm, setBpm] = useState(100)
-  const [bpmInput, setBpmInput] = useState('100')
+interface MetronomeProps {
+  // 다른 컴포넌트(백킹트랙 플레이어 등) 안에 이미 카드 테두리가 있을 때
+  // 카드를 이중으로 겹치지 않도록 바깥 wrapper를 생략한다.
+  bare?: boolean
+  // bare일 때는 재생 상태를 부모(백킹트랙 플레이어의 공용 Play 버튼)가 제어한다 —
+  // 자체 Start/Stop 버튼은 숨기고 이 값만 따른다.
+  isPlaying?: boolean
+}
+
+export function Metronome({
+  bare = false,
+  isPlaying: controlledIsPlaying,
+}: MetronomeProps = {}) {
+  const [uncontrolledIsPlaying, setUncontrolledIsPlaying] = useState(false)
+  const isPlaying = bare ? (controlledIsPlaying ?? false) : uncontrolledIsPlaying
+  const {
+    bpm,
+    bpmInput,
+    setBpm,
+    handleBpmChange,
+    handleBpmInputChange,
+    handleBpmBlur,
+    handleTapTempo,
+  } = useBpmControl({
+    initialBpm: 100,
+    min: MIN_BPM,
+    max: MAX_BPM,
+    tapTimeoutMs: TAP_TIMEOUT_MS,
+    tapHistory: TAP_HISTORY,
+  })
   const [beatsPerBar, setBeatsPerBar] = useState(4)
   const [subdivision, setSubdivision] = useState<Subdivision>('quarter')
   const [sound, setSound] = useState<ClickSound>('beep')
@@ -66,7 +93,6 @@ export function Metronome() {
   const metalRef = useRef<Tone.MetalSynth | null>(null)
   const digitalRef = useRef<Tone.Synth | null>(null)
   const seqRef = useRef<Tone.Sequence<number> | null>(null)
-  const tapTimestampsRef = useRef<number[]>([])
 
   // Initialize every sound engine once — cheap synths, kept alive so
   // switching sound mid-session never needs to (re)build audio nodes.
@@ -209,6 +235,9 @@ export function Metronome() {
     if (!isPlaying) return
 
     Tone.getTransport().bpm.value = bpm
+    // 같은 페이지의 백킹트랙 플레이어가 앞서 스윙을 걸어둔 채로 Transport를
+    // 넘겨줄 수 있어 재생 시작 시 항상 명시적으로 리셋한다.
+    Tone.getTransport().swing = 0
 
     const steps = Array.from({ length: totalTicks }, (_, i) => i)
 
@@ -235,46 +264,7 @@ export function Metronome() {
 
   const handleTogglePlay = async () => {
     await Tone.start()
-    setIsPlaying(prev => !prev)
-  }
-
-  const handleBpmChange = (delta: number) => {
-    const next = Math.min(MAX_BPM, Math.max(MIN_BPM, bpm + delta))
-    setBpm(next)
-    setBpmInput(String(next))
-  }
-
-  const handleBpmInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBpmInput(e.target.value)
-  }
-
-  const handleBpmBlur = () => {
-    const val = parseInt(bpmInput, 10)
-    const clamped = isNaN(val)
-      ? bpm
-      : Math.min(MAX_BPM, Math.max(MIN_BPM, val))
-    setBpm(clamped)
-    setBpmInput(String(clamped))
-  }
-
-  const handleTapTempo = () => {
-    const now = performance.now()
-    const taps = tapTimestampsRef.current
-    if (taps.length > 0 && now - taps[taps.length - 1] > TAP_TIMEOUT_MS) {
-      taps.length = 0
-    }
-    taps.push(now)
-    if (taps.length > TAP_HISTORY) taps.shift()
-
-    if (taps.length >= 2) {
-      const intervals = taps.slice(1).map((t, i) => t - taps[i])
-      const avgMs = intervals.reduce((a, b) => a + b, 0) / intervals.length
-      const nextBpm = Math.round(
-        Math.min(MAX_BPM, Math.max(MIN_BPM, 60000 / avgMs))
-      )
-      setBpm(nextBpm)
-      setBpmInput(String(nextBpm))
-    }
+    setUncontrolledIsPlaying(prev => !prev)
   }
 
   const currentBeat =
@@ -283,16 +273,29 @@ export function Metronome() {
     currentTick === null ? false : currentTick % ticksPerBeat === 0
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6 space-y-8">
-      {/* Pulse + play button */}
-      <div className="flex flex-col items-center gap-6 py-4">
+    <div
+      className={cn(
+        bare ? 'space-y-4' : 'space-y-8',
+        !bare && 'bg-card border border-border rounded-xl p-6'
+      )}
+    >
+      {/* Pulse + play button — 원, 도트, 버튼을 항상 세로로 쌓고 가운데 정렬한다.
+          bare일 때는 부모(백킹트랙 플레이어)가 overflow-hidden 컨테이너로 감싸므로
+          펄스 원이 커질 때(scale 1.15) 위쪽이 잘리지 않도록 세로 여백을 남긴다. */}
+      <div
+        className={cn(
+          'flex flex-col items-center',
+          bare ? 'gap-3 py-1.5' : 'gap-6 py-4'
+        )}
+      >
         <motion.div
           animate={
             isPlaying && isBeatTick ? { scale: [1, 1.15, 1] } : { scale: 1 }
           }
           transition={{ duration: (60 / bpm) * 0.5, ease: 'easeOut' }}
           className={cn(
-            'w-28 h-28 rounded-full flex items-center justify-center text-3xl font-bold tabular-nums transition-colors',
+            'rounded-full flex items-center justify-center font-bold tabular-nums transition-colors',
+            bare ? 'w-14 h-14 text-lg' : 'w-28 h-28 text-3xl',
             isPlaying && isBeatTick
               ? currentBeat === 0
                 ? 'bg-accent-orange text-background shadow-lg shadow-accent-orange/50'
@@ -303,10 +306,10 @@ export function Metronome() {
           {currentBeat === null ? bpm : currentBeat + 1}
         </motion.div>
 
-        {/* 도트는 항상 같은 박스 크기(w-4 h-4)를 유지하고 transform/opacity로만
-            애니메이션한다 — width/height를 직접 바꾸면 매 비트마다 레이아웃이
-            재계산되어 CLS(레이아웃 시프트)가 발생한다. */}
-        <div className="flex items-center gap-3">
+        {/* 도트는 항상 같은 박스 크기를 유지하고 transform/opacity로만 애니메이션한다
+            — width/height를 직접 바꾸면 매 비트마다 레이아웃이 재계산되어
+            CLS(레이아웃 시프트)가 발생한다. */}
+        <div className={cn('flex items-center', bare ? 'gap-1.5' : 'gap-3')}>
           {Array.from({ length: beatsPerBar }, (_, i) => {
             const active = isPlaying && currentBeat === i
             return (
@@ -315,7 +318,8 @@ export function Metronome() {
                 animate={{ scale: active ? 1 : 0.7, opacity: active ? 1 : 0.35 }}
                 transition={{ duration: 0.15, ease: 'easeOut' }}
                 className={cn(
-                  'w-4 h-4 rounded-full',
+                  'rounded-full',
+                  bare ? 'w-2.5 h-2.5' : 'w-4 h-4',
                   active
                     ? i === 0
                       ? 'bg-accent-orange shadow-md shadow-accent-orange/40'
@@ -327,27 +331,41 @@ export function Metronome() {
           })}
         </div>
 
-        {/* 고정 너비 — Start/Stop 라벨 길이가 달라도 버튼 박스가 리사이즈되지 않도록 */}
-        <button
-          onClick={handleTogglePlay}
-          className={cn(
-            'w-32 py-3 rounded-lg text-base font-semibold transition-all inline-flex items-center justify-center',
-            isPlaying
-              ? 'bg-accent-orange text-background hover:opacity-90'
-              : 'bg-accent-teal text-background hover:opacity-90'
-          )}
-        >
-          {isPlaying ? '■ Stop' : '▶ Start'}
-        </button>
+        {/* bare일 때는 부모(백킹트랙 플레이어)의 공용 Play 버튼이 재생을 제어하므로
+            여기서는 자체 버튼을 숨긴다 — 버튼 중복/위치 불일치를 막기 위함. */}
+        {!bare && (
+          <button
+            onClick={handleTogglePlay}
+            className={cn(
+              'w-32 py-3 rounded-lg text-base font-semibold transition-all inline-flex items-center justify-center',
+              isPlaying
+                ? 'bg-accent-orange text-background hover:opacity-90'
+                : 'bg-accent-teal text-background hover:opacity-90'
+            )}
+          >
+            {isPlaying ? '■ Stop' : '▶ Start'}
+          </button>
+        )}
       </div>
 
       {/* BPM control */}
-      <div className="flex flex-col items-center gap-3">
-        <p className="text-xs text-muted-foreground">BPM</p>
-        <div className="flex items-center gap-3">
+      <div
+        className={cn(
+          bare
+            ? 'flex items-center gap-2'
+            : 'flex flex-col items-center gap-3'
+        )}
+      >
+        <p className={cn('text-xs text-muted-foreground', bare && 'shrink-0')}>
+          BPM
+        </p>
+        <div className={cn('flex items-center', bare ? 'gap-1.5' : 'gap-3')}>
           <button
             onClick={() => handleBpmChange(-5)}
-            className="w-9 h-9 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground font-bold transition-colors"
+            className={cn(
+              'rounded-md bg-muted hover:bg-muted/80 text-muted-foreground font-bold transition-colors',
+              bare ? 'w-7 h-7 text-sm' : 'w-9 h-9'
+            )}
           >
             −
           </button>
@@ -359,46 +377,68 @@ export function Metronome() {
             onChange={handleBpmInputChange}
             onFocus={e => e.target.select()}
             onBlur={handleBpmBlur}
-            className="w-20 text-center text-xl font-mono font-semibold tabular-nums bg-muted rounded-md px-1 py-1.5 border-0 outline-none focus:ring-1 focus:ring-accent-teal [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className={cn(
+              'text-center font-mono font-semibold tabular-nums bg-muted rounded-md border-0 outline-none focus:ring-1 focus:ring-accent-teal [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+              bare ? 'w-14 text-sm px-1 py-1' : 'w-20 text-xl px-1 py-1.5'
+            )}
           />
           <button
             onClick={() => handleBpmChange(5)}
-            className="w-9 h-9 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground font-bold transition-colors"
+            className={cn(
+              'rounded-md bg-muted hover:bg-muted/80 text-muted-foreground font-bold transition-colors',
+              bare ? 'w-7 h-7 text-sm' : 'w-9 h-9'
+            )}
           >
             +
           </button>
           <button
             onClick={handleTapTempo}
-            className="ml-2 px-4 h-9 rounded-md border border-border bg-card hover:border-accent-teal hover:text-accent-teal text-sm font-medium text-muted-foreground transition-colors"
+            className={cn(
+              'rounded-md border border-border bg-card hover:border-accent-teal hover:text-accent-teal font-medium text-muted-foreground transition-colors',
+              bare ? 'ml-1 px-2.5 h-7 text-xs' : 'ml-2 px-4 h-9 text-sm'
+            )}
           >
             TAP
           </button>
         </div>
-        <input
-          type="range"
-          min={MIN_BPM}
-          max={MAX_BPM}
-          value={bpm}
-          onChange={e => {
-            const next = Number(e.target.value)
-            setBpm(next)
-            setBpmInput(String(next))
-          }}
-          className="w-full max-w-xs accent-accent-teal"
-        />
+        {!bare && (
+          <input
+            type="range"
+            min={MIN_BPM}
+            max={MAX_BPM}
+            value={bpm}
+            onChange={e => setBpm(Number(e.target.value))}
+            className="w-full max-w-xs accent-accent-teal"
+          />
+        )}
       </div>
 
       {/* Beats per bar + subdivision */}
-      <div className="flex flex-wrap items-center justify-center gap-6">
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground text-center">박자</p>
+      <div
+        className={cn(
+          'flex flex-wrap items-center gap-4',
+          bare ? 'justify-start' : 'justify-center gap-6'
+        )}
+      >
+        <div
+          className={cn(bare ? 'flex items-center gap-2' : 'space-y-1')}
+        >
+          <p
+            className={cn(
+              'text-xs text-muted-foreground',
+              !bare && 'text-center'
+            )}
+          >
+            박자
+          </p>
           <div className="relative inline-flex p-1 bg-muted rounded-lg">
             {BEATS_PER_BAR_OPTIONS.map(n => (
               <button
                 key={n}
                 onClick={() => setBeatsPerBar(n)}
                 className={cn(
-                  'relative w-9 py-2 text-sm font-medium rounded-md transition-colors z-10',
+                  'relative py-2 text-sm font-medium rounded-md transition-colors z-10',
+                  bare ? 'w-7' : 'w-9',
                   beatsPerBar === n
                     ? 'text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
@@ -417,15 +457,25 @@ export function Metronome() {
           </div>
         </div>
 
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground text-center">세분화</p>
+        <div
+          className={cn(bare ? 'flex items-center gap-2' : 'space-y-1')}
+        >
+          <p
+            className={cn(
+              'text-xs text-muted-foreground',
+              !bare && 'text-center'
+            )}
+          >
+            세분화
+          </p>
           <div className="relative inline-flex p-1 bg-muted rounded-lg">
             {(Object.keys(SUBDIVISION_CONFIG) as Subdivision[]).map(s => (
               <button
                 key={s}
                 onClick={() => setSubdivision(s)}
                 className={cn(
-                  'relative px-3 py-2 text-sm font-medium rounded-md transition-colors z-10',
+                  'relative text-sm font-medium rounded-md transition-colors z-10',
+                  bare ? 'px-2 py-2' : 'px-3 py-2',
                   subdivision === s
                     ? 'text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
@@ -446,9 +496,16 @@ export function Metronome() {
       </div>
 
       {/* Sound picker */}
-      <div className="space-y-2">
-        <p className="text-xs text-muted-foreground text-center">소리</p>
-        <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className={cn(!bare && 'space-y-2')}>
+        {!bare && (
+          <p className="text-xs text-muted-foreground text-center">소리</p>
+        )}
+        <div
+          className={cn(
+            'flex flex-wrap items-center gap-2',
+            bare ? 'justify-start' : 'justify-center'
+          )}
+        >
           {(Object.keys(SOUND_LABELS) as ClickSound[]).map(s => (
             <Button
               key={s}
@@ -467,7 +524,12 @@ export function Metronome() {
       </div>
 
       {/* Volume */}
-      <div className="flex items-center justify-center gap-3">
+      <div
+        className={cn(
+          'flex items-center gap-3',
+          bare ? 'justify-start' : 'justify-center'
+        )}
+      >
         <span className="text-xs text-muted-foreground w-12">Volume</span>
         <input
           type="range"
@@ -475,7 +537,7 @@ export function Metronome() {
           max={100}
           value={volume}
           onChange={e => setVolume(Number(e.target.value))}
-          className="w-40 accent-accent-teal"
+          className={cn(bare ? 'w-28' : 'w-40', 'accent-accent-teal')}
         />
         <span className="text-xs text-muted-foreground w-7 tabular-nums">
           {volume}

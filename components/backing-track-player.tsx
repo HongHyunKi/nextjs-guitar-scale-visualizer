@@ -5,6 +5,8 @@ import * as Tone from 'tone'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useBpmControl } from '@/hooks/use-bpm-control'
+import { Metronome } from '@/components/metronome'
 import { ScaleType } from '@/lib/music-utils'
 import {
   getDiatonicChords,
@@ -161,8 +163,14 @@ export function BackingTrackPlayer({
   const [mode, setMode] = useState<PlayerMode>('backing')
   const [expanded, setExpanded] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [bpm, setBpm] = useState(90)
-  const [bpmInput, setBpmInput] = useState('90')
+  const {
+    bpm,
+    bpmInput,
+    handleBpmChange,
+    handleBpmInputChange,
+    handleBpmBlur,
+    handleTapTempo,
+  } = useBpmControl({ initialBpm: 90, min: 60, max: 200 })
   const [style, setStyle] = useState<BackingStyle>('rock')
   const [progressionOverride, setProgressionOverride] = useState<
     number[] | null
@@ -241,17 +249,20 @@ export function BackingTrackPlayer({
 
   // Rebuild sequences whenever playback params change
   useEffect(() => {
+    // 메트로놈 모드일 때는 이 effect가 Transport를 건드리면 안 된다 — 임베드된
+    // <Metronome bare>가 같은 전역 Transport를 쓰는데, isPlaying이 바뀔 때마다
+    // 여기서 stop/cancel을 호출하면 메트로놈이 막 시작한 시퀀스를 바로 멈춰버린다.
+    if (mode !== 'backing') return
+
     setCurrentBeat(null)
     setQuarterBeat(null)
     drumStepRef.current = 0
-    chordSeqRef.current?.dispose()
-    drumSeqRef.current?.dispose()
     Tone.getTransport().stop() // Bug 2: cancel 전에 stop
     Tone.getTransport().cancel()
     Tone.getTransport().position = 0 // Bug 2: position 리셋
 
     if (!isPlaying) return
-    if (mode === 'backing' && !samplerLoaded) return
+    if (!samplerLoaded) return
 
     Tone.getTransport().bpm.value = bpm
 
@@ -266,38 +277,36 @@ export function BackingTrackPlayer({
       Tone.getTransport().swing = 0
     }
 
-    if (mode === 'backing') {
-      const { chords } = getDiatonicChords(rootNote, scaleType)
-      const progression = progressionIndices.map(
-        i => chords[Math.min(i, chords.length - 1)]
-      )
+    const { chords } = getDiatonicChords(rootNote, scaleType)
+    const progression = progressionIndices.map(
+      i => chords[Math.min(i, chords.length - 1)]
+    )
 
-      let beatStep = 0
+    let beatStep = 0
 
-      chordSeqRef.current = new Tone.Sequence<Chord>(
-        (time, chord) => {
-          const step = beatStep % progression.length
-          beatStep++
+    chordSeqRef.current = new Tone.Sequence<Chord>(
+      (time, chord) => {
+        const step = beatStep % progression.length
+        beatStep++
 
-          const delay = Math.max(0, (time - Tone.now()) * 1000 - 20)
-          setTimeout(() => setCurrentBeat(step), delay)
+        const delay = Math.max(0, (time - Tone.now()) * 1000 - 20)
+        setTimeout(() => setCurrentBeat(step), delay)
 
-          if (samplerRef.current) {
-            chord.midiNotes.forEach((midi, i) => {
-              const noteName = Tone.Frequency(midi, 'midi').toNote()
-              samplerRef.current!.triggerAttackRelease(
-                noteName,
-                '2n',
-                time + i * 0.04
-              )
-            })
-          }
-        },
-        progression,
-        '1m'
-      )
-      chordSeqRef.current.start(0)
-    }
+        if (samplerRef.current) {
+          chord.midiNotes.forEach((midi, i) => {
+            const noteName = Tone.Frequency(midi, 'midi').toNote()
+            samplerRef.current!.triggerAttackRelease(
+              noteName,
+              '2n',
+              time + i * 0.04
+            )
+          })
+        }
+      },
+      progression,
+      '1m'
+    )
+    chordSeqRef.current.start(0)
 
     const stepsPerMeasure = DRUM_PATTERNS[style][subdivision].length
     const stepsPerQuarter = stepsPerMeasure / 4
@@ -321,6 +330,11 @@ export function BackingTrackPlayer({
 
     drumSeqRef.current.start(0)
     Tone.getTransport().start()
+
+    return () => {
+      chordSeqRef.current?.dispose()
+      drumSeqRef.current?.dispose()
+    }
   }, [
     isPlaying,
     mode,
@@ -362,23 +376,6 @@ export function BackingTrackPlayer({
     setProgressionOverride(null) // Bug 1: 같은 배치로 처리 → Effect 한 번만 트리거
   }
 
-  const handleBpmChange = (delta: number) => {
-    const next = Math.min(200, Math.max(60, bpm + delta))
-    setBpm(next)
-    setBpmInput(String(next))
-  }
-
-  const handleBpmInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBpmInput(e.target.value)
-  }
-
-  const handleBpmBlur = () => {
-    const val = parseInt(bpmInput, 10)
-    const clamped = isNaN(val) ? bpm : Math.min(200, Math.max(60, val))
-    setBpm(clamped)
-    setBpmInput(String(clamped))
-  }
-
   const cycleSlotChord = (slotIndex: number, direction: 1 | -1) => {
     const { chords } = getDiatonicChords(rootNote, scaleType)
     setProgressionOverride(prev => {
@@ -391,6 +388,8 @@ export function BackingTrackPlayer({
   }
 
   const { chords } = getDiatonicChords(rootNote, scaleType)
+  // 배킹트랙 모드만 피아노 샘플 로딩을 기다린다 — 메트로놈은 로딩 대상이 없다.
+  const canPlay = mode === 'backing' ? samplerLoaded : true
 
   return (
     <div className="bg-card border border-border rounded-xl p-6 space-y-5">
@@ -422,21 +421,17 @@ export function BackingTrackPlayer({
         <div className="flex items-center gap-2">
           <button
             onClick={handleTogglePlay}
-            disabled={mode === 'backing' && !samplerLoaded}
+            disabled={!canPlay}
             className={cn(
               'px-5 py-2 rounded-lg text-sm font-semibold transition-all',
               isPlaying
                 ? 'bg-accent-orange text-background hover:opacity-90'
-                : mode === 'metronome' || samplerLoaded
+                : canPlay
                   ? 'bg-accent-teal text-background hover:opacity-90'
                   : 'bg-muted text-muted-foreground cursor-not-allowed'
             )}
           >
-            {mode === 'backing' && !samplerLoaded
-              ? 'Loading...'
-              : isPlaying
-                ? '■ Stop'
-                : '▶ Play'}
+            {!canPlay ? 'Loading...' : isPlaying ? '■ Stop' : '▶ Play'}
           </button>
           <button
             onClick={() => setExpanded(prev => !prev)}
@@ -465,6 +460,8 @@ export function BackingTrackPlayer({
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="overflow-hidden space-y-5"
           >
+      {mode === 'backing' && (
+        <>
       {/* Style + BPM */}
       <div className="flex flex-wrap items-center gap-6">
         {/* Style selector */}
@@ -549,6 +546,12 @@ export function BackingTrackPlayer({
             >
               +
             </button>
+            <button
+              onClick={handleTapTempo}
+              className="ml-1 px-3 h-8 rounded-md border border-border bg-card hover:border-accent-teal hover:text-accent-teal text-xs font-medium text-muted-foreground transition-colors"
+            >
+              TAP
+            </button>
           </div>
         </div>
 
@@ -556,24 +559,22 @@ export function BackingTrackPlayer({
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">Volume</p>
           <div className="flex flex-col gap-1.5">
-            {mode === 'backing' && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-11">
-                  Piano
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  value={chordVolume}
-                  onChange={e => setChordVolume(Number(e.target.value))}
-                  className="w-24 accent-accent-teal"
-                />
-                <span className="text-xs text-muted-foreground w-7 tabular-nums">
-                  {chordVolume}
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-11">
+                Piano
+              </span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={chordVolume}
+                onChange={e => setChordVolume(Number(e.target.value))}
+                className="w-24 accent-accent-teal"
+              />
+              <span className="text-xs text-muted-foreground w-7 tabular-nums">
+                {chordVolume}
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground w-11">
                 Drums
@@ -621,8 +622,6 @@ export function BackingTrackPlayer({
         })}
       </div>
 
-      {mode === 'backing' && (
-        <>
           {/* Loop progression */}
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">Loop (4 bars)</p>
@@ -681,6 +680,8 @@ export function BackingTrackPlayer({
           </div>
         </>
       )}
+
+      {mode === 'metronome' && <Metronome bare isPlaying={isPlaying} />}
           </motion.div>
         )}
       </AnimatePresence>
