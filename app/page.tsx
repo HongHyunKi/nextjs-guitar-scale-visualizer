@@ -71,7 +71,7 @@ export default function Home() {
               GuitarKit
             </h1>
             <p className="text-base text-muted-foreground max-w-md text-balance">
-              기타 연습을 더 쉽고 정확하게
+              기타 연습에 필요한 건 여기 다 있어요
             </p>
           </motion.div>
 
