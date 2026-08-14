@@ -32,7 +32,7 @@ lib/
 test/
   music-utils.test.ts   — canonical test suite (run via `pnpm test`)
 docs/
-  pentatonic-scale-spec.md — original spec for scale implementation
+  caged-system-spec.md  — CAGED barre/range math, wrap-around guard, bug history
 DESIGN.md               — design system (authoritative for ALL UI styling)
 ```
 
