@@ -10,7 +10,7 @@ import './globals.css'
 const _geist = Geist({ subsets: ['latin'] })
 const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
-const TITLE = `${SITE_NAME} | 기타 연습 도구 모음 — 스케일 · 코드사전 · 메트로놈`
+const TITLE = `${SITE_NAME} | 기타 연습 도구 모음 — 스케일 · 코드사전 · 메트로놈 · 튜너`
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

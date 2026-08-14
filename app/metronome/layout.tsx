@@ -1,10 +1,26 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+import { SITE_NAME } from '@/lib/site'
+
+const TITLE = '메트로놈 | Guitar ScaleUp'
+const DESCRIPTION = 'BPM과 박자를 설정해 리듬 연습을 합니다.'
 
 export const metadata: Metadata = {
-  title: '메트로놈 | Guitar ScaleUp',
-  description: 'BPM과 박자를 설정해 리듬 연습을 합니다.',
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: '/metronome' },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    type: 'website',
+    locale: 'ko_KR',
+    siteName: SITE_NAME,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default function MetronomeLayout({ children }: { children: ReactNode }) {
