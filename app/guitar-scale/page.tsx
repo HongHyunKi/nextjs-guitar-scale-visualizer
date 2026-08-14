@@ -6,6 +6,8 @@ import { Fretboard, GuitarTone } from '@/components/fretboard'
 import { RootNoteSelector } from '@/components/root-note-selector'
 import { ScaleSelector } from '@/components/scale-selector'
 import { ViewSettingsPopover } from '@/components/view-settings-popover'
+import { FretRangeSlider } from '@/components/fret-range-slider'
+import { FretNumberInput } from '@/components/fret-number-input'
 import { CAGEDSelector } from '@/components/caged-selector'
 import { BackingTrackPlayer } from '@/components/backing-track-player'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -74,10 +76,6 @@ export default function Page() {
               onNotationTypeChange={setNotationType}
               guitarTone={guitarTone}
               onGuitarToneChange={setGuitarTone}
-              startFret={startFret}
-              frets={frets}
-              onStartFretChange={setStartFret}
-              onFretsChange={setFrets}
             />
           </div>
 
@@ -119,13 +117,44 @@ export default function Page() {
               </p>
             )}
           </div>
+
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">
+              Fret Range
+            </label>
+            <div className="flex items-center gap-2 max-w-xs">
+              <FretNumberInput
+                label="Start Fret"
+                value={startFret}
+                onChange={setStartFret}
+                min={0}
+                max={frets - 3}
+              />
+              <FretRangeSlider
+                startFret={startFret}
+                endFret={frets}
+                onStartFretChange={setStartFret}
+                onEndFretChange={setFrets}
+                min={0}
+                max={24}
+                minGap={3}
+              />
+              <FretNumberInput
+                label="End Fret"
+                value={frets}
+                onChange={setFrets}
+                min={startFret + 3}
+                max={24}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Fretboard */}
         <div className="relative">
           <div className="bg-card border border-border rounded-xl">
             {/* 구성음 범례 — 프렛보드와 한 덩어리로 묶어 참조하기 쉽게 */}
-            <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-6 pb-4">
+            <div className="space-y-2 px-6 pt-6 pb-4">
               <p className="text-sm font-medium text-muted-foreground">
                 <span className="text-foreground font-semibold">
                   {rootNote} {SCALE_LABELS[scaleType]}
