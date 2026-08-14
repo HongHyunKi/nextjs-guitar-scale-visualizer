@@ -6,7 +6,16 @@ export function Footer() {
       <div className="max-w-7xl mx-auto py-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} HongHyunKi. All rights reserved.
+            © {new Date().getFullYear()}{' '}
+            <a
+              href="https://github.com/HongHyunKi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              HongHyunKi
+            </a>
+            . All rights reserved.
           </div>
 
           <div className="flex items-center gap-4">
