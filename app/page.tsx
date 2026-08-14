@@ -68,7 +68,7 @@ export default function Home() {
               <Music className="w-8 h-8 text-background" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-balance">
-              Guitar ScaleUp
+              GuitarKit
             </h1>
             <p className="text-base text-muted-foreground max-w-md text-balance">
               기타 연습을 더 쉽고 정확하게

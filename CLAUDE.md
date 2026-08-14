@@ -1,4 +1,4 @@
-# Guitar ScaleUp — CLAUDE.md
+# GuitarKit — CLAUDE.md
 
 > This file is the authoritative guide for AI agents working on this project.
 > Read it fully before making any changes to music theory logic, scale rendering, or test coverage.

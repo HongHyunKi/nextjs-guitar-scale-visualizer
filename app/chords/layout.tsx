@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { SITE_NAME } from '@/lib/site'
 
-const TITLE = '코드사전 | Guitar ScaleUp'
+const TITLE = '코드사전 | GuitarKit'
 const DESCRIPTION =
   '코드 구성음과 운지법을 다이어그램으로 확인하고 소리로 들어봅니다.'
 

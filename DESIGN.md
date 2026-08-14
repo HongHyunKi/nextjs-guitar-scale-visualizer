@@ -1,4 +1,4 @@
-# Guitar ScaleUp — DESIGN.md
+# GuitarKit — DESIGN.md
 
 > UI 스타일링의 단일 기준 문서. className을 추가·수정하기 전에 반드시 읽을 것.
 > 여기 없는 새로운 시각 패턴이 필요하면, 먼저 이 문서에 규칙을 추가한 뒤 코드에 적용한다.

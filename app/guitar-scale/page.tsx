@@ -53,7 +53,7 @@ export default function Page() {
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-balance">
-                Guitar ScaleUp
+                GuitarKit
               </h1>
               <p className="text-muted-foreground text-sm">
                 스케일 연습을 더 쉽고 정확하게

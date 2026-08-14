@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { SITE_NAME } from '@/lib/site'
 
-const TITLE = '스케일 연습 | Guitar ScaleUp'
+const TITLE = '스케일 연습 | GuitarKit'
 const DESCRIPTION =
   '6현 지판 위에 스케일을 시각화하고, CAGED 시스템과 실시간 사운드로 연습합니다.'
 

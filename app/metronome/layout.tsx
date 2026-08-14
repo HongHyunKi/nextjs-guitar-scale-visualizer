@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { SITE_NAME } from '@/lib/site'
 
-const TITLE = '메트로놈 | Guitar ScaleUp'
+const TITLE = '메트로놈 | GuitarKit'
 const DESCRIPTION = 'BPM과 박자를 설정해 리듬 연습을 합니다.'
 
 export const metadata: Metadata = {
